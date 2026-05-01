@@ -84,6 +84,7 @@ export default function History() {
                 <TableHead className="w-[180px] font-mono text-xs">TIMESTAMP</TableHead>
                 <TableHead className="w-[150px] font-mono text-xs">DOMAIN</TableHead>
                 <TableHead className="w-[140px] font-mono text-xs">STATUS</TableHead>
+                <TableHead className="w-[90px] font-mono text-xs">SOURCES</TableHead>
                 <TableHead className="font-mono text-xs">CONTENT SNIPPET</TableHead>
               </TableRow>
             </TableHeader>
@@ -96,12 +97,13 @@ export default function History() {
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-8" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-full" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredTickets?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-mono">
+                  <TableCell colSpan={7} className="h-32 text-center text-muted-foreground font-mono">
                     NO RECORDS FOUND MATCHING CRITERIA
                   </TableCell>
                 </TableRow>
@@ -144,6 +146,15 @@ export default function History() {
                             </div>
                           )}
                         </TableCell>
+                        <TableCell>
+                          {hasDocs ? (
+                            <Badge variant="outline" className="rounded-none font-mono text-[10px] border-primary/30 text-primary tabular-nums">
+                              {ticket.retrievedDocs.length}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs font-mono text-muted-foreground/40">—</span>
+                          )}
+                        </TableCell>
                         <TableCell className="max-w-[400px]">
                           <div className="truncate text-sm opacity-80 group-hover:opacity-100 transition-opacity font-mono">
                             {ticket.ticketText}
@@ -153,7 +164,7 @@ export default function History() {
 
                       {isExpanded && (
                         <TableRow key={`${ticket.id}-detail`} className="bg-muted/20 hover:bg-muted/20">
-                          <TableCell colSpan={6} className="p-0">
+                          <TableCell colSpan={7} className="p-0">
                             <div className="px-6 py-4 space-y-4 border-t border-border/40">
                               <div className="space-y-1.5">
                                 <h4 className="text-[10px] font-mono font-bold text-muted-foreground tracking-wider">INPUT</h4>
