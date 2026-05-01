@@ -35,11 +35,13 @@ const CONFIDENCE_THRESHOLD = 0.25;
 
 const ESCALATION_PATTERNS: Record<string, string[]> = {
   fraud: [
-    "fraud", "fraudulent", "scam", "stolen", "unauthorized transaction",
-    "unauthorized purchase", "unauthorized charge", "unauthorized use",
-    "identity theft", "phishing", "compromised", "hacked account",
-    "suspicious activity", "someone used my card", "fake charge",
-    "not me", "i didn't make this", "i never made",
+    "fraud", "fraudulent", "scam",
+    "unauthorized transaction", "unauthorized purchase", "unauthorized charge",
+    "identity theft", "phishing", "hacked account",
+    "suspicious activity", "someone used my card", "someone made a purchase",
+    "fake charge", "charge i didn't make", "transaction i didn't make",
+    "i didn't make this", "i never made this", "i never authorized",
+    "active fraud", "card was used without", "used without my permission",
   ],
   billing_dispute: [
     "billing dispute", "overcharged", "wrong amount", "double charge",
