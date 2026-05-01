@@ -82,7 +82,14 @@ export default function History() {
   }, [tickets]);
 
   const filteredTickets = tickets?.filter(ticket => {
-    const matchesSearch = ticket.ticketText.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.toLowerCase();
+    const docs = Array.isArray(ticket.retrievedDocs) ? ticket.retrievedDocs : [];
+    const matchesSearch = !term ||
+      ticket.ticketText.toLowerCase().includes(term) ||
+      docs.some((d: { section?: string; title?: string }) =>
+        (d.section ?? "").toLowerCase().includes(term) ||
+        (d.title ?? "").toLowerCase().includes(term)
+      );
     const matchesDomain = domainFilter === "all" || ticket.domain === domainFilter;
     const matchesStatus = statusFilter === "all" || 
       (statusFilter === "escalated" ? ticket.escalated : !ticket.escalated);
@@ -126,7 +133,7 @@ export default function History() {
           <div className="relative flex-1 w-full group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
             <Input 
-              placeholder="Search ticket content..." 
+              placeholder="Search tickets or KB sections / titles..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 rounded-lg border-white/10 bg-black/40 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all duration-300 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus-visible:shadow-[0_0_15px_rgba(0,212,255,0.2),inset_0_0_10px_rgba(0,0,0,0.5)] font-mono text-sm h-10"
