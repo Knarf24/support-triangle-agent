@@ -33,6 +33,7 @@ export default function History() {
   const [domainFilter, setDomainFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourcesFilter, setSourcesFilter] = useState<string>("all");
+  const [minSources, setMinSources] = useState<number>(1);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const exportCsv = useCallback(() => {
@@ -69,9 +70,12 @@ export default function History() {
     const matchesDomain = domainFilter === "all" || ticket.domain === domainFilter;
     const matchesStatus = statusFilter === "all" || 
       (statusFilter === "escalated" ? ticket.escalated : !ticket.escalated);
-    const hasDocs = Array.isArray(ticket.retrievedDocs) && ticket.retrievedDocs.length > 0;
+    const docsCount = Array.isArray(ticket.retrievedDocs) ? ticket.retrievedDocs.length : 0;
+    const hasDocs = docsCount > 0;
     const matchesSources = sourcesFilter === "all" ||
-      (sourcesFilter === "with" ? hasDocs : !hasDocs);
+      (sourcesFilter === "without" ? !hasDocs :
+       sourcesFilter === "with" ? hasDocs :
+       docsCount >= minSources);
     
     return matchesSearch && matchesDomain && matchesStatus && matchesSources;
   }).reverse();
@@ -134,16 +138,32 @@ export default function History() {
               <SelectItem value="escalated">Escalated</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={sourcesFilter} onValueChange={setSourcesFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] rounded-lg border-white/10 bg-black/40 focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 h-10 font-mono text-xs">
-              <SelectValue placeholder="Sources" />
-            </SelectTrigger>
-            <SelectContent className="rounded-lg border-white/10 bg-[#0F1423] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] font-mono text-xs">
-              <SelectItem value="all">All Sources</SelectItem>
-              <SelectItem value="with">With Sources</SelectItem>
-              <SelectItem value="without">Without Sources</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Select value={sourcesFilter} onValueChange={(val) => { setSourcesFilter(val); if (val !== "min") setMinSources(1); }}>
+              <SelectTrigger className="w-full sm:w-[180px] rounded-lg border-white/10 bg-black/40 focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 h-10 font-mono text-xs">
+                <SelectValue placeholder="Sources" />
+              </SelectTrigger>
+              <SelectContent className="rounded-lg border-white/10 bg-[#0F1423] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] font-mono text-xs">
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="with">With Sources</SelectItem>
+                <SelectItem value="min">Min. Count</SelectItem>
+                <SelectItem value="without">Without Sources</SelectItem>
+              </SelectContent>
+            </Select>
+            {sourcesFilter === "min" && (
+              <div className="flex items-center gap-1 shrink-0">
+                <Input
+                  type="number"
+                  min={1}
+                  value={minSources}
+                  onChange={(e) => setMinSources(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-16 h-10 rounded-lg border-white/10 bg-black/40 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary font-mono text-xs text-center tabular-nums shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
+                  data-testid="input-min-sources"
+                />
+                <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">+</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="glass-card rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
