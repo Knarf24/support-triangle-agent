@@ -36,6 +36,7 @@ TOP_K = 3
 
 SEMANTIC_WEIGHT = 0.65
 TFIDF_WEIGHT = 0.35
+SECTION_BONUS = 0.15
 
 
 class RetrievedDoc(TypedDict, total=False):
@@ -107,6 +108,21 @@ def _load_corpus_with_domain(domain: str) -> list[tuple[str, str]]:
 def _load_corpus_with_domain_and_section(domain: str) -> list[tuple[str, str, str]]:
     """Load and split corpus file, returning (chunk, domain, section) triples."""
     return [(chunk, domain, section) for chunk, section in _load_corpus_with_sections(domain)]
+
+
+def _section_boost(ticket_lower: str, sections: list[str]) -> np.ndarray:
+    """Return a small score bonus for chunks whose section keywords appear in the ticket.
+
+    Uses word-boundary matching to avoid partial matches (e.g. 'api' inside 'rapid').
+    """
+    boost = np.zeros(len(sections))
+    for i, section in enumerate(sections):
+        if not section:
+            continue
+        words = [w for w in re.split(r"[\s&]+", section.lower()) if len(w) > 2]
+        if any(re.search(r"\b" + re.escape(w) + r"\b", ticket_lower) for w in words):
+            boost[i] = SECTION_BONUS
+    return boost
 
 
 def _tfidf_scores(ticket: str, chunks: list[str]) -> np.ndarray:
@@ -185,13 +201,14 @@ def retrieve(
 
     tfidf = _tfidf_scores(ticket, all_chunks)
     semantic = _semantic_scores(ticket, all_chunks, cache_key)
+    section_boost = _section_boost(ticket.lower(), all_sections)
 
     if semantic is not None:
-        hybrid = SEMANTIC_WEIGHT * semantic + TFIDF_WEIGHT * tfidf
-        method = f"hybrid (semantic {int(SEMANTIC_WEIGHT*100)}% + tfidf {int(TFIDF_WEIGHT*100)}%)"
+        hybrid = SEMANTIC_WEIGHT * semantic + TFIDF_WEIGHT * tfidf + section_boost
+        method = f"hybrid (semantic {int(SEMANTIC_WEIGHT*100)}% + tfidf {int(TFIDF_WEIGHT*100)}% + section boost)"
     else:
-        hybrid = tfidf
-        method = "tfidf-only (semantic unavailable)"
+        hybrid = tfidf + section_boost
+        method = "tfidf-only + section boost (semantic unavailable)"
 
     if verbose:
         print(f"  Retrieval   : {method}")
@@ -228,27 +245,32 @@ def retrieve_with_scores(
 
     Returns:
         List of (chunk, hybrid_score, semantic_score, tfidf_score) tuples.
+        hybrid_score includes the section boost so scores match retrieve().
     """
     if domain == "unknown":
-        all_chunks: list[str] = []
+        tagged3: list[tuple[str, str, str]] = []
         for d in DOMAIN_FILE_MAP:
-            all_chunks.extend(_load_corpus(d))
+            tagged3.extend(_load_corpus_with_domain_and_section(d))
         cache_key = "all"
     else:
-        all_chunks = _load_corpus(domain)
+        tagged3 = _load_corpus_with_domain_and_section(domain)
         cache_key = domain
 
-    if not all_chunks:
+    if not tagged3:
         return []
+
+    all_chunks = [chunk for chunk, _, _ in tagged3]
+    all_sections = [s for _, _, s in tagged3]
 
     tfidf = _tfidf_scores(ticket, all_chunks)
     semantic = _semantic_scores(ticket, all_chunks, cache_key)
+    section_boost = _section_boost(ticket.lower(), all_sections)
 
     if semantic is not None:
-        hybrid = SEMANTIC_WEIGHT * semantic + TFIDF_WEIGHT * tfidf
+        hybrid = SEMANTIC_WEIGHT * semantic + TFIDF_WEIGHT * tfidf + section_boost
     else:
         semantic = np.zeros(len(all_chunks))
-        hybrid = tfidf
+        hybrid = tfidf + section_boost
 
     top_indices = np.argsort(hybrid)[::-1][:top_k]
     return [

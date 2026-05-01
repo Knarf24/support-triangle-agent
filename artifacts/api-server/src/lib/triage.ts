@@ -52,6 +52,8 @@ const DOMAIN_KEYWORDS: Record<string, string[]> = {
 
 const CONFIDENCE_THRESHOLD = 0.25;
 
+const SECTION_BONUS = 0.5;
+
 const ESCALATION_PATTERNS: Record<string, string[]> = {
   fraud: [
     "fraud", "fraudulent", "scam",
@@ -96,6 +98,13 @@ const DOMAIN_HELP_URL: Record<string, string> = {
   claude: "https://support.anthropic.com",
   visa: "https://usa.visa.com/support",
 };
+
+function sectionMatchBonus(section: string, ticketLower: string): number {
+  if (!section) return 0;
+  const sectionWords = section.toLowerCase().split(/[\s&]+/).filter((w) => w.length > 2);
+  const matches = sectionWords.filter((w) => new RegExp(`\\b${w}\\b`).test(ticketLower)).length;
+  return matches > 0 ? SECTION_BONUS : 0;
+}
 
 export function extractDocTitle(chunk: string): string {
   const match = chunk.match(/^Q:\s*(.+)/m);
@@ -237,6 +246,7 @@ export function retrieveDocs(ticket: string, domain: string): RetrievedDoc[] {
       for (const word of ticketWords) {
         if (chunkLower.includes(word)) score += 1;
       }
+      score += sectionMatchBonus(section, lower);
       if (score > 0) scored.push({ chunk, section, score, domain: d });
     }
   }
