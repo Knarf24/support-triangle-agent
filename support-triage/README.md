@@ -26,11 +26,22 @@ support-triage/
 ```
 Ticket Input
     → Domain Classifier     (keyword scoring → HackerRank / Claude / Visa)
-    → Corpus Retriever      (TF-IDF similarity → top-3 relevant docs)
+    → Corpus Retriever      (hybrid semantic + TF-IDF → top-3 relevant docs)
     → Risk Evaluator        (escalation rules → fraud / billing / access / bugs)
     → Response Generator    (Claude API + RAG context → grounded reply)
     → Output                (output.csv + log.txt)
 ```
+
+## Retrieval: Hybrid Semantic + TF-IDF
+
+The retriever combines two signals for best accuracy:
+
+| Signal | Model | Weight | Strength |
+|--------|-------|--------|----------|
+| Semantic | `all-MiniLM-L6-v2` (22MB) | 65% | Meaning-level matches ("wrong answer" ≈ "compilation differs locally") |
+| TF-IDF | scikit-learn n-gram | 35% | Exact keyword matches |
+
+The corpus embedding is cached in memory across tickets in the same session, making subsequent retrievals fast (~5ms). Falls back to TF-IDF-only if the embedding model is unavailable.
 
 ## Setup
 

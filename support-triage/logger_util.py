@@ -35,8 +35,8 @@ def log_classification(domain: str, confidence: float, scores: dict[str, float])
     _write(f"CLASSIFICATION: domain={domain.upper()} confidence={confidence:.2f} [{score_str}]")
 
 
-def log_retrieval(chunks: list[str]) -> None:
-    _write(f"RETRIEVAL: {len(chunks)} chunk(s) retrieved")
+def log_retrieval(chunks: list[str], method: str = "hybrid") -> None:
+    _write(f"RETRIEVAL [{method}]: {len(chunks)} chunk(s) retrieved")
     for i, chunk in enumerate(chunks, 1):
         preview = chunk[:120].replace("\n", " ")
         _write(f"  Chunk {i}: {preview}...")

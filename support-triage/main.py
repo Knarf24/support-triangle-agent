@@ -36,7 +36,7 @@ from logger_util import (
     log_session_start,
     log_ticket,
 )
-from retriever import retrieve
+from retriever import retrieve, retrieve_with_scores
 from risk_evaluator import evaluate_risk
 
 SEPARATOR = "=" * 65
@@ -65,6 +65,7 @@ def process_ticket(
     ticket_id: int,
     ticket_text: str,
     verbose: bool = True,
+    show_scores: bool = False,
 ) -> dict:
     """
     Full pipeline for a single support ticket.
@@ -85,11 +86,22 @@ def process_ticket(
         domain_display = domain.upper() if domain != "unknown" else "UNKNOWN"
         print(f"  Domain      : {domain_display} (confidence: {confidence:.0%})")
 
-    context_chunks = retrieve(ticket_text, domain)
-    log_retrieval(context_chunks)
+    scored_chunks = retrieve_with_scores(ticket_text, domain)
+    context_chunks = [chunk for chunk, *_ in scored_chunks]
+
+    has_semantic = any(sem > 0 for _, _, sem, _ in scored_chunks) if scored_chunks else False
+    retrieval_method = f"hybrid (semantic 65% + tfidf 35%)" if has_semantic else "tfidf-only"
+    log_retrieval(context_chunks, method=retrieval_method)
 
     if verbose:
-        print(f"  Retrieved   : {len(context_chunks)} relevant doc(s)")
+        print(f"  Retrieved   : {len(context_chunks)} doc(s)  [{retrieval_method}]")
+        if show_scores and scored_chunks:
+            print()
+            print("  Score breakdown (hybrid | semantic | tfidf):")
+            for i, (chunk, hybrid, sem, tfidf_s) in enumerate(scored_chunks, 1):
+                preview = chunk[:60].replace("\n", " ")
+                print(f"    [{i}] {hybrid:.3f} | {sem:.3f} | {tfidf_s:.3f}  — {preview}...")
+            print()
 
     should_escalate, risk_reason, risk_categories = evaluate_risk(ticket_text, domain)
     log_risk(should_escalate, risk_reason, risk_categories)
@@ -141,7 +153,7 @@ def process_ticket(
     }
 
 
-def run_interactive() -> None:
+def run_interactive(show_scores: bool = False) -> None:
     """Interactive terminal mode — process one ticket at a time."""
     print_banner()
     print("\nEnter your support ticket below.")
@@ -166,7 +178,7 @@ def run_interactive() -> None:
                     log_session_end(ticket_id - 1, auto_responded, escalated)
                     return
                 if line.lower() == "demo" and not lines:
-                    run_demo(starting_id=ticket_id)
+                    run_demo(starting_id=ticket_id, show_scores=show_scores)
                     return
                 if line == "" and lines:
                     break
@@ -177,7 +189,7 @@ def run_interactive() -> None:
                 print("No input detected. Please enter a ticket.")
                 continue
 
-            result = process_ticket(ticket_id, ticket_text)
+            result = process_ticket(ticket_id, ticket_text, show_scores=show_scores)
             if result["escalated"]:
                 escalated += 1
             else:
@@ -190,7 +202,7 @@ def run_interactive() -> None:
             break
 
 
-def run_demo(starting_id: int = 1) -> None:
+def run_demo(starting_id: int = 1, show_scores: bool = False) -> None:
     """Run all built-in demo tickets automatically."""
     print_banner()
     print("\nRunning demo with 8 sample tickets...\n")
@@ -202,7 +214,7 @@ def run_demo(starting_id: int = 1) -> None:
     escalated = 0
 
     for i, ticket in enumerate(DEMO_TICKETS, starting_id):
-        result = process_ticket(i, ticket, verbose=True)
+        result = process_ticket(i, ticket, verbose=True, show_scores=show_scores)
         if result["escalated"]:
             escalated += 1
         else:
@@ -218,7 +230,7 @@ def run_demo(starting_id: int = 1) -> None:
     print(SEPARATOR)
 
 
-def run_batch(filepath: str) -> None:
+def run_batch(filepath: str, show_scores: bool = False) -> None:
     """Process tickets from a CSV file (must have a 'ticket_text' column)."""
     print_banner()
     print(f"\nBatch mode: loading tickets from '{filepath}'...\n")
@@ -243,7 +255,7 @@ def run_batch(filepath: str) -> None:
     escalated = 0
 
     for i, ticket_text in enumerate(tickets, 1):
-        result = process_ticket(i, ticket_text, verbose=True)
+        result = process_ticket(i, ticket_text, verbose=True, show_scores=show_scores)
         if result["escalated"]:
             escalated += 1
         else:
@@ -273,14 +285,19 @@ def main() -> None:
         metavar="FILE",
         help="Batch mode: process tickets from a CSV file (needs 'ticket_text' column)",
     )
+    parser.add_argument(
+        "--scores",
+        action="store_true",
+        help="Show hybrid/semantic/TF-IDF score breakdown per retrieved doc",
+    )
     args = parser.parse_args()
 
     if args.demo:
-        run_demo()
+        run_demo(show_scores=args.scores)
     elif args.batch:
-        run_batch(args.batch)
+        run_batch(args.batch, show_scores=args.scores)
     else:
-        run_interactive()
+        run_interactive(show_scores=args.scores)
 
 
 if __name__ == "__main__":
