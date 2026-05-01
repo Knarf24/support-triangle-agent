@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { runKbUrlMigration } from "./lib/kb-url-migration";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,8 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  runKbUrlMigration().catch((migrationErr) => {
+    logger.error({ err: migrationErr }, "KB URL migration failed on startup");
+  });
 });
