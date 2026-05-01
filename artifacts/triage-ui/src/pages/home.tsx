@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DomainBadge } from "@/components/domain-badge";
-import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -26,6 +26,7 @@ type StreamingState = StreamingMeta & {
   ticketText: string;
   response: string;
   isStreaming: boolean;
+  stopped?: boolean;
   id?: number;
 };
 
@@ -116,7 +117,7 @@ export default function Home() {
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
         aborted = true;
-        setStreaming((prev) => prev && ({ ...prev, isStreaming: false }));
+        setStreaming((prev) => prev && ({ ...prev, isStreaming: false, stopped: true }));
       } else {
         console.error("[triage/stream] Stream error:", err);
         toast({ title: "Error", description: "Failed to process the ticket. Please try again.", variant: "destructive" });
@@ -217,6 +218,16 @@ export default function Home() {
                   {streaming?.isStreaming && (
                     <Badge variant="outline" className="animate-pulse bg-primary/10 text-primary border-primary/30">
                       ANALYZING...
+                    </Badge>
+                  )}
+                  {streaming?.stopped && !streaming?.isStreaming && (
+                    <Badge
+                      data-testid="badge-stopped"
+                      variant="outline"
+                      className="bg-amber-500/10 text-amber-500 border-amber-500/40 font-mono flex items-center gap-1"
+                    >
+                      <Ban className="w-3 h-3" />
+                      PARTIAL — STOPPED
                     </Badge>
                   )}
                 </CardTitle>
