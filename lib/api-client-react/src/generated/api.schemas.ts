@@ -72,3 +72,10 @@ export interface TriageStats {
 export interface ErrorResponse {
   error: string;
 }
+
+export interface ParseErrorResponse {
+  /** Human-readable description of the parse failure */
+  error: string;
+  /** Technical detail from the underlying parse exception */
+  detail?: string;
+}

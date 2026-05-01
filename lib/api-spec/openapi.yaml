@@ -77,6 +77,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TicketResult"
+        "422":
+          description: One or more tickets contain malformed data and could not be parsed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParseErrorResponse"
 
   /tickets/{id}:
     get:
@@ -102,6 +108,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Ticket contains malformed data and could not be parsed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParseErrorResponse"
 
   /triage/stats:
     get:
@@ -272,5 +284,17 @@ components:
       properties:
         error:
           type: string
+      required:
+        - error
+
+    ParseErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable description of the parse failure
+        detail:
+          type: string
+          description: Technical detail from the underlying parse exception
       required:
         - error

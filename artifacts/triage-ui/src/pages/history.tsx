@@ -28,7 +28,7 @@ function escapeCsv(value: unknown): string {
 }
 
 export default function History() {
-  const { data: tickets, isLoading } = useListTickets();
+  const { data: tickets, isLoading, error } = useListTickets();
   const [searchTerm, setSearchTerm] = useState("");
   const [domainFilter, setDomainFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -180,7 +180,21 @@ export default function History() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {error ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-48 text-center bg-black/20">
+                    <div className="flex flex-col items-center gap-3 text-destructive">
+                      <AlertCircle className="w-8 h-8 opacity-70" />
+                      <div className="space-y-1">
+                        <p className="font-mono text-xs font-bold tracking-[0.15em]">FAILED TO LOAD TICKET DATA</p>
+                        <p className="font-sans text-xs text-muted-foreground max-w-sm">
+                          One or more tickets contain malformed data and could not be loaded. Please contact your administrator.
+                        </p>
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i} className="border-b border-white/5">
                     <TableCell><Skeleton className="h-4 w-4 bg-white/10" /></TableCell>

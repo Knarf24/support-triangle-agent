@@ -161,11 +161,17 @@ router.get("/tickets", async (req, res): Promise<void> => {
     .orderBy(desc(ticketsTable.createdAt))
     .limit(50);
 
-  res.json(
-    ListTicketsResponse.parse(
-      tickets.map((t) => ({ ...t, retrievedDocs: normalizeRetrievedDocs(t.retrievedDocs), createdAt: t.createdAt.toISOString() })),
-    ),
-  );
+  let normalized: Array<Omit<(typeof tickets)[number], "retrievedDocs" | "createdAt"> & { retrievedDocs: RetrievedDoc[]; createdAt: string }>;
+  try {
+    normalized = tickets.map((t) => ({ ...t, retrievedDocs: normalizeRetrievedDocs(t.retrievedDocs), createdAt: t.createdAt.toISOString() }));
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown parse error";
+    req.log.error({ err }, "Failed to parse retrieved_docs for ticket list");
+    res.status(422).json({ error: "One or more tickets contain malformed data and could not be parsed.", detail: message });
+    return;
+  }
+
+  res.json(ListTicketsResponse.parse(normalized));
 });
 
 router.get("/tickets/:id", async (req, res): Promise<void> => {
@@ -185,7 +191,17 @@ router.get("/tickets/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetTicketResponse.parse({ ...ticket, retrievedDocs: normalizeRetrievedDocs(ticket.retrievedDocs), createdAt: ticket.createdAt.toISOString() }));
+  let retrievedDocs: ReturnType<typeof normalizeRetrievedDocs>;
+  try {
+    retrievedDocs = normalizeRetrievedDocs(ticket.retrievedDocs);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown parse error";
+    req.log.error({ err, ticketId: ticket.id }, "Failed to parse retrieved_docs for ticket");
+    res.status(422).json({ error: "This ticket contains malformed data and could not be parsed.", detail: message });
+    return;
+  }
+
+  res.json(GetTicketResponse.parse({ ...ticket, retrievedDocs, createdAt: ticket.createdAt.toISOString() }));
 });
 
 router.get("/triage/stats", async (req, res): Promise<void> => {
@@ -225,7 +241,13 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
   const sourcesByDomain: Record<string, number> = { hackerrank: 0, claude: 0, visa: 0, unknown: 0 };
 
   for (const row of sourceRows) {
-    const docs = normalizeRetrievedDocs(row.retrievedDocs);
+    let docs: ReturnType<typeof normalizeRetrievedDocs>;
+    try {
+      docs = normalizeRetrievedDocs(row.retrievedDocs);
+    } catch (err) {
+      req.log.warn({ err }, "Skipping malformed retrieved_docs row in stats calculation");
+      docs = [];
+    }
     totalSources += docs.length;
     const domain = row.domain as string;
     const domainKey = domain in sourcesByDomain ? domain : "unknown";

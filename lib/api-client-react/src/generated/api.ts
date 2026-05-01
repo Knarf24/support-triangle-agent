@@ -19,6 +19,7 @@ import type {
 import type {
   ErrorResponse,
   HealthStatus,
+  ParseErrorResponse,
   StartupStatusResponse,
   TicketResult,
   TriageRequest,
@@ -292,7 +293,7 @@ export const getListTicketsQueryKey = () => {
 
 export const getListTicketsQueryOptions = <
   TData = Awaited<ReturnType<typeof listTickets>>,
-  TError = ErrorType<unknown>,
+  TError = ErrorType<ParseErrorResponse>,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof listTickets>>,
@@ -319,7 +320,7 @@ export const getListTicketsQueryOptions = <
 export type ListTicketsQueryResult = NonNullable<
   Awaited<ReturnType<typeof listTickets>>
 >;
-export type ListTicketsQueryError = ErrorType<unknown>;
+export type ListTicketsQueryError = ErrorType<ParseErrorResponse>;
 
 /**
  * @summary List all processed tickets
@@ -327,7 +328,7 @@ export type ListTicketsQueryError = ErrorType<unknown>;
 
 export function useListTickets<
   TData = Awaited<ReturnType<typeof listTickets>>,
-  TError = ErrorType<unknown>,
+  TError = ErrorType<ParseErrorResponse>,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof listTickets>>,
@@ -368,7 +369,7 @@ export const getGetTicketQueryKey = (id: number) => {
 
 export const getGetTicketQueryOptions = <
   TData = Awaited<ReturnType<typeof getTicket>>,
-  TError = ErrorType<ErrorResponse>,
+  TError = ErrorType<ErrorResponse | ParseErrorResponse>,
 >(
   id: number,
   options?: {
@@ -401,7 +402,7 @@ export const getGetTicketQueryOptions = <
 export type GetTicketQueryResult = NonNullable<
   Awaited<ReturnType<typeof getTicket>>
 >;
-export type GetTicketQueryError = ErrorType<ErrorResponse>;
+export type GetTicketQueryError = ErrorType<ErrorResponse | ParseErrorResponse>;
 
 /**
  * @summary Get a single ticket by ID
@@ -409,7 +410,7 @@ export type GetTicketQueryError = ErrorType<ErrorResponse>;
 
 export function useGetTicket<
   TData = Awaited<ReturnType<typeof getTicket>>,
-  TError = ErrorType<ErrorResponse>,
+  TError = ErrorType<ErrorResponse | ParseErrorResponse>,
 >(
   id: number,
   options?: {
