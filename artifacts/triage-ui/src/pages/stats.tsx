@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 import { Activity, ShieldAlert, CheckCircle2, TrendingUp, Layers, BookOpen, BarChart2, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { useState, useEffect, useMemo } from "react";
+import { format, getISOWeek, getISOWeekYear, startOfISOWeek } from "date-fns";
 import { DomainBadge } from "@/components/domain-badge";
 import { Badge } from "@/components/ui/badge";
 
@@ -40,10 +40,29 @@ export default function Stats() {
   const { data: stats, isLoading } = useGetTriageStats();
   const { data: tickets, isLoading: isTicketsLoading } = useListTickets();
   const [mounted, setMounted] = useState(false);
+  const [trendsView, setTrendsView] = useState<'day' | 'week'>('day');
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const weeklySourcesData = useMemo(() => {
+    if (!stats?.sourcesOverTime?.length) return [];
+    const buckets = new Map<string, { weekKey: string; weekStart: Date; sources: number }>();
+    for (const { date, sources } of stats.sourcesOverTime) {
+      const d = new Date(date + "T00:00:00");
+      const year = getISOWeekYear(d);
+      const week = getISOWeek(d);
+      const key = `${year}-W${String(week).padStart(2, '0')}`;
+      if (!buckets.has(key)) {
+        buckets.set(key, { weekKey: key, weekStart: startOfISOWeek(d), sources: 0 });
+      }
+      buckets.get(key)!.sources += sources;
+    }
+    return Array.from(buckets.values()).sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime());
+  }, [stats?.sourcesOverTime]);
+
+  const sourcesChartData = trendsView === 'week' ? weeklySourcesData : stats?.sourcesOverTime ?? [];
 
   const domainData = stats ? [
     { name: 'HackerRank', value: stats.byDomain.hackerrank, color: 'hsl(var(--domain-hackerrank))' },
@@ -122,28 +141,50 @@ export default function Stats() {
 
         <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
           <CardHeader className="border-b border-white/5 bg-black/20 pb-4">
-            <CardTitle className="text-xs font-mono font-bold text-primary tracking-[0.2em] flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              KB SOURCES CONSULTED OVER TIME
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-mono font-bold text-primary tracking-[0.2em] flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                KB SOURCES CONSULTED OVER TIME
+              </CardTitle>
+              <div className="flex items-center gap-0.5 bg-black/40 border border-white/10 rounded-md p-0.5">
+                {(['day', 'week'] as const).map((view) => (
+                  <button
+                    key={view}
+                    onClick={() => setTrendsView(view)}
+                    className={`px-2.5 py-1 text-[10px] font-mono font-bold tracking-[0.15em] rounded transition-all duration-200 ${
+                      trendsView === view
+                        ? 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_8px_rgba(0,212,255,0.2)]'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {view === 'day' ? 'DAY' : 'WEEK'}
+                  </button>
+                ))}
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="pt-6 h-[260px]">
             {isLoading ? (
               <Skeleton className="w-full h-full bg-white/5" />
-            ) : !stats?.sourcesOverTime?.length ? (
+            ) : !sourcesChartData.length ? (
               <div className="flex items-center justify-center h-full text-xs font-mono text-muted-foreground tracking-[0.15em]">NO DATA YET</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.sourcesOverTime} margin={{ top: 10, right: 16, left: -20, bottom: 0 }}>
+                <LineChart data={sourcesChartData} margin={{ top: 10, right: 16, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                   <XAxis
-                    dataKey="date"
+                    dataKey={trendsView === 'week' ? 'weekKey' : 'date'}
                     stroke="hsl(var(--muted-foreground))"
                     fontSize={10}
                     tickLine={false}
                     axisLine={false}
                     fontFamily="var(--font-mono)"
                     tickFormatter={(v: string) => {
+                      if (trendsView === 'week') {
+                        const match = v.match(/^(\d+)-W(\d+)$/);
+                        if (match) return `W${match[2]}`;
+                        return v;
+                      }
                       const d = new Date(v + "T00:00:00");
                       return `${d.getMonth() + 1}/${d.getDate()}`;
                     }}
@@ -155,6 +196,11 @@ export default function Stats() {
                     itemStyle={{ color: 'hsl(var(--foreground))', fontFamily: 'var(--font-mono)', fontSize: '12px' }}
                     labelStyle={{ color: 'hsl(var(--muted-foreground))', fontWeight: 'bold', fontFamily: 'var(--font-mono)', fontSize: '10px' }}
                     labelFormatter={(label: string) => {
+                      if (trendsView === 'week') {
+                        const match = label.match(/^(\d+)-W(\d+)$/);
+                        if (match) return `Week ${match[2]}, ${match[1]}`;
+                        return label;
+                      }
                       const d = new Date(label + "T00:00:00");
                       return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
                     }}
