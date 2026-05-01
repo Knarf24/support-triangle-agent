@@ -1,0 +1,7 @@
+{
+  "sources": [
+    { "domain": "hackerrank", "url": "https://support.hackerrank.com" },
+    { "domain": "claude",     "url": "https://support.anthropic.com" },
+    { "domain": "visa",       "url": "https://usa.visa.com/support" }
+  ]
+}
