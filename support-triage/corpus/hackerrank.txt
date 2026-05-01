@@ -1,0 +1,97 @@
+HACKERRANK SUPPORT DOCUMENTATION
+
+=== ACCOUNT & REGISTRATION ===
+
+Q: How do I create a HackerRank account?
+A: Visit hackerrank.com and click "Sign Up". You can register with your email address or sign in using Google, LinkedIn, or GitHub. Once registered, verify your email to activate your account.
+
+Q: I forgot my password. How do I reset it?
+A: Click "Forgot Password" on the login page and enter your registered email address. You'll receive a password reset link within a few minutes. Check your spam folder if you don't see it. The link expires after 24 hours.
+
+Q: How do I update my profile information?
+A: Log in to your account, click on your profile picture in the top right, select "Profile", then "Edit Profile". You can update your name, bio, skills, and other details. Click "Save" when done.
+
+Q: Can I change my username?
+A: Usernames cannot be changed after account creation as they are tied to your public profile and submissions. If you need a different username, you would need to create a new account.
+
+Q: My account has been disabled. What should I do?
+A: Account disablements occur due to violations of our Terms of Service, including plagiarism, sharing solutions publicly, or suspicious activity. Contact support@hackerrank.com with your username and explanation.
+
+=== CODING CHALLENGES & SUBMISSIONS ===
+
+Q: Why is my solution showing "Wrong Answer"?
+A: A "Wrong Answer" means your solution doesn't produce the expected output for one or more test cases. Review the problem statement carefully, check edge cases (empty inputs, maximum values), and test your solution against the provided examples before resubmitting.
+
+Q: Why is my solution showing "Time Limit Exceeded" (TLE)?
+A: Your solution is taking too long to execute. Consider optimizing your algorithm — replace O(n²) approaches with O(n log n) or O(n). Avoid unnecessary loops and use efficient data structures like hash maps or sets.
+
+Q: Why does my code compile locally but fail on HackerRank?
+A: HackerRank runs code in a sandboxed environment with specific compiler versions. Ensure you're using standard library functions, not reading from files (use stdin instead), and your code handles all edge cases. Check the language version specified in the problem.
+
+Q: Can I resubmit a challenge after getting the wrong answer?
+A: Yes, most challenges allow unlimited resubmissions. Your best score or latest submission (depending on the challenge type) will be recorded. Check the specific problem rules for submission limits.
+
+Q: How do I run my code against custom test cases?
+A: In the editor, click "Custom Input" below the code editor. Enter your test input there and click "Run Code" (not "Submit"). This lets you test without using a submission attempt.
+
+Q: What programming languages are supported?
+A: HackerRank supports C, C++, Java, Python (2 and 3), JavaScript, Ruby, Perl, PHP, Haskell, Scala, C#, Go, and more. The languages available depend on the specific challenge.
+
+Q: My submission was accepted but my score didn't update. What happened?
+A: Score updates may take a few minutes. Refresh the leaderboard or your profile page. If the issue persists after 30 minutes, contact support with your submission ID.
+
+=== CONTESTS & COMPETITIONS ===
+
+Q: How do I join a contest?
+A: Navigate to the "Contests" section on HackerRank. Click on the contest name and then "Join Contest". Some contests are open to all, while others may require registration or an invitation code.
+
+Q: I joined a contest but can't see the problems. What's wrong?
+A: Contest problems are only visible after the contest has officially started. Check the contest start time in your local timezone. If the contest has started and you still can't see problems, try clearing your browser cache and refreshing.
+
+Q: Can I participate in a contest after it has started?
+A: Most contests allow late registration, but you'll have less time to solve problems. Your time starts when you join, not from the contest start time (for some contest types). Read the contest rules for specifics.
+
+Q: How is the leaderboard ranked in contests?
+A: Rankings are based on total score. If scores are tied, the tiebreaker is typically the time of your last accepted submission — earlier submissions rank higher. Some contests use penalty points for wrong submissions.
+
+Q: I was disqualified from a contest. Why?
+A: Disqualification occurs for sharing solutions, plagiarism, using unauthorized external resources, or violating contest rules. Disqualification decisions are final.
+
+=== CERTIFICATES & ASSESSMENTS ===
+
+Q: How do I get a HackerRank certificate?
+A: Take the HackerRank Skills Certification Test for your desired skill (Python, Java, SQL, etc.). Pass the test with a score above the passing threshold to earn a certificate. Certificates are available on your profile.
+
+Q: My certificate is not showing on my profile. What should I do?
+A: Certificates appear automatically after passing. If yours isn't showing, wait 24 hours and refresh. If the issue persists, contact support with the assessment name and date taken.
+
+Q: Can I retake a certification test?
+A: Yes, you can retake certification tests after a waiting period (typically 7 days for most tests). Your most recent score is recorded. There is no limit on the number of retakes.
+
+Q: How long are HackerRank certificates valid?
+A: HackerRank certificates do not expire. Once earned, they remain on your profile permanently and can be shared via a unique URL.
+
+=== HIRING & JOBS ===
+
+Q: How do HackerRank hiring assessments work for candidates?
+A: Employers send you an email invitation with a unique assessment link. Open the link before the deadline, complete the coding challenges within the time limit, and submit. Your code is evaluated automatically.
+
+Q: I didn't receive my assessment invitation. What should I do?
+A: Check your spam/junk folder for an email from HackerRank or the employer. The invitation link is tied to your email — do not share it. Contact the recruiting team or employer directly if you cannot locate it.
+
+Q: Can I use external resources during a hiring assessment?
+A: This depends on the employer's rules, which are stated at the start of the assessment. Most assessments allow use of language documentation but prohibit copying solutions from external sources. Follow the instructions provided.
+
+Q: My internet connection dropped during an assessment. Will my work be saved?
+A: HackerRank auto-saves code every few seconds. Your progress should be preserved. If you were disconnected, try rejoining with the same link. Contact support immediately with your assessment ID if you cannot rejoin.
+
+=== TECHNICAL ISSUES ===
+
+Q: The code editor is not loading. How do I fix it?
+A: Try clearing your browser cache and cookies, disabling browser extensions (especially ad blockers), and refreshing the page. Supported browsers are Chrome and Firefox. If the problem persists, try a different browser or device.
+
+Q: I'm getting a compilation error but my code looks correct. What's wrong?
+A: Check for subtle issues: trailing whitespace, incorrect character encoding (especially for special characters), or using features not supported in the platform's language version. Also verify your I/O format matches what the problem expects.
+
+Q: HackerRank is running slowly or timing out. What can I do?
+A: This can occur during high-traffic periods (contest start times). Wait a few minutes and try again. Ensure your internet connection is stable. If the issue is ongoing, check the HackerRank status page.

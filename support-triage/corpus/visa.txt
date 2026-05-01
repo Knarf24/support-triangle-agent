@@ -1,0 +1,96 @@
+VISA CARDHOLDER SUPPORT DOCUMENTATION
+
+=== CARD BASICS ===
+
+Q: What is a Visa card and how does it work?
+A: Visa is a global payment network that connects cardholders, merchants, and financial institutions. Your Visa card — whether credit, debit, or prepaid — allows you to make purchases worldwide at millions of merchants that accept Visa. When you use your card, Visa's network securely processes the transaction between your bank and the merchant's bank.
+
+Q: Where can I use my Visa card?
+A: Visa cards are accepted at over 80 million merchants in more than 200 countries and territories worldwide. Look for the Visa symbol at checkout. Your card also works at ATMs displaying the Visa or Plus logo for cash withdrawals.
+
+Q: What is the difference between a Visa credit card and a Visa debit card?
+A: A Visa credit card lets you borrow money from your card issuer up to a credit limit and pay it back later. A Visa debit card draws funds directly from your linked bank account. Both use the same Visa payment network but have different billing and liability protections.
+
+Q: What is a Visa prepaid card?
+A: A Visa prepaid card is loaded with a set amount of money in advance. You can spend up to the loaded amount without needing a bank account or credit check. Prepaid cards are useful for budgeting, travel, and giving as gifts.
+
+=== ACTIVATING & USING YOUR CARD ===
+
+Q: How do I activate my new Visa card?
+A: Card activation is managed by your card-issuing bank, not Visa. Look for activation instructions on the sticker attached to your new card. Typically you call a number or visit your bank's website. Contact your card issuer directly if you have trouble activating.
+
+Q: My card was declined. What should I do?
+A: Declines can happen for several reasons: insufficient funds, entering incorrect PIN or CVV, exceeding your credit limit, or a merchant's system not accepting your card type. Contact your card-issuing bank (number on the back of your card) to find out the specific reason for the decline.
+
+Q: How do I use my Visa card for contactless payments?
+A: Look for the contactless symbol (four curved lines) on your card and the payment terminal. Hold your card near the terminal — typically within 1-2 inches. The payment usually completes in under a second. Contactless is supported at most modern payment terminals.
+
+Q: Can I use my Visa card internationally?
+A: Yes, Visa cards work at millions of international merchants and ATMs. Inform your bank before traveling to prevent your card from being flagged for fraud. Note that international transactions may incur foreign transaction fees charged by your card issuer.
+
+Q: What is the CVV/CVC on my Visa card?
+A: The CVV (Card Verification Value) is a 3-digit security code on the back of your Visa card (4 digits on Amex). It verifies that you physically possess the card during card-not-present transactions (online purchases). Never share your CVV over the phone unless you initiated the call with a trusted institution.
+
+=== CARD SECURITY ===
+
+Q: My Visa card was lost or stolen. What should I do?
+A: Contact your card-issuing bank immediately using the number on your statement or their website. They will cancel your card and issue a replacement. Report any unauthorized transactions at the same time. Most banks have 24/7 fraud lines.
+
+Q: I see a transaction I don't recognize on my statement. What should I do?
+A: First, check if the merchant name might appear differently than expected (retailers often use parent company names). If you still don't recognize it, contact your card-issuing bank immediately to dispute the charge. You have rights under consumer protection laws to dispute unauthorized transactions.
+
+Q: What is Visa's Zero Liability Policy?
+A: Visa's Zero Liability Policy protects you from unauthorized charges on your Visa credit and debit cards for purchases made in-store, over the phone, or online. You pay zero for fraudulent transactions when you report them promptly. Conditions and exceptions may apply — contact your card issuer for details.
+
+Q: How does Visa protect my transactions?
+A: Visa uses multiple layers of security including: EMV chip technology for in-person transactions, tokenization for mobile and online payments, real-time fraud monitoring using AI and machine learning, 3D Secure for online purchases, and encryption across the payment network.
+
+Q: What should I do if I think my card details were compromised in a data breach?
+A: Contact your card-issuing bank immediately. They can monitor your account for suspicious activity, issue a new card with a different number, and help you file a dispute for any unauthorized charges. You are protected by Visa's Zero Liability Policy for unauthorized transactions.
+
+=== PAYMENTS & BILLING ===
+
+Q: How do I set up automatic payments for my Visa credit card bill?
+A: Automatic payments are set up through your card-issuing bank, not Visa. Log into your bank's online portal or mobile app and look for "AutoPay" or "Automatic Payments" in the credit card section. You can typically set up payment for the minimum due, statement balance, or a custom amount.
+
+Q: I made a payment but it's not showing on my balance. When will it post?
+A: Payment posting times vary by bank. Payments made before the daily cutoff typically post the same day, while others may take 1-2 business days. Online and mobile payments often post faster than mailed checks. Contact your card issuer if a payment hasn't posted after 3 business days.
+
+Q: Can I get a refund on my Visa card?
+A: Refunds for merchant purchases are processed by the merchant, not by Visa. Contact the merchant to initiate a return or refund. The credit should appear on your statement within 3-5 business days after the merchant processes it. For unauthorized charges, contact your bank to file a dispute.
+
+Q: What happens if I miss a credit card payment?
+A: Missing a payment may result in a late fee, interest charges, and potential impact to your credit score. Contact your card issuer immediately — many will waive a first-time late fee. Consider setting up automatic payments to avoid missing future payments.
+
+=== ATMS & CASH ===
+
+Q: How do I find a Visa/Plus ATM near me?
+A: Use the Visa Global ATM Locator at visa.com/locator or the Visa mobile app to find ATMs accepting Visa and Plus cards. Your bank may also have a dedicated ATM locator in their app.
+
+Q: What are the fees for using my Visa card at an ATM?
+A: ATM fees vary and are set by your card issuer and the ATM operator, not by Visa. Common fees include: out-of-network ATM fees charged by your bank, surcharge fees charged by the ATM owner, and foreign transaction fees for international withdrawals. Check with your bank for your specific fee schedule.
+
+Q: What is a Visa cash advance?
+A: A cash advance lets you use your Visa credit card to withdraw cash from an ATM or bank. Note that cash advances typically have higher interest rates, no grace period, and additional fees compared to regular purchases. Consult your card agreement for specific terms.
+
+=== DISPUTES & CHARGEBACKS ===
+
+Q: How do I dispute a charge on my Visa card?
+A: Contact your card-issuing bank (not Visa directly) to file a dispute. Your bank will investigate and may issue a provisional credit while the dispute is resolved. You generally have 60-120 days from the transaction date to file a dispute, but contact your bank as soon as possible.
+
+Q: What is a chargeback?
+A: A chargeback is a transaction reversal initiated through your bank when you dispute a charge. Valid reasons include unauthorized transactions, items not received, items significantly different from description, or merchant not processing a return. Your bank will conduct an investigation.
+
+Q: How long does a Visa dispute take to resolve?
+A: Dispute resolution typically takes 30-45 days, though complex cases may take up to 90 days. You may receive a provisional credit to your account while the dispute is investigated. Your bank will notify you of the outcome.
+
+=== VISA REWARDS & BENEFITS ===
+
+Q: How do I redeem my Visa credit card rewards?
+A: Rewards programs are managed by your card-issuing bank, not by Visa. Log into your bank's portal or app and look for a "Rewards" section. You can typically redeem for statement credits, travel, gift cards, or merchandise depending on your card type.
+
+Q: My rewards points expired. Can I get them back?
+A: Rewards program terms, including expiration policies, are set by your card issuer. Contact your bank's rewards customer service to inquire about point reinstatement. Some issuers will reinstate recently expired points as a courtesy.
+
+Q: What Visa benefits do I have access to?
+A: Visa cards come with a range of benefits depending on your card tier (Visa, Visa Signature, Visa Infinite). Common benefits include: purchase protection, extended warranty, travel insurance, rental car collision coverage, and concierge services. Visit visa.com/benefits or contact your card issuer to see your specific benefits.

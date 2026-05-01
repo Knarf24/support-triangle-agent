@@ -1,0 +1,94 @@
+CLAUDE (ANTHROPIC) HELP CENTER DOCUMENTATION
+
+=== GETTING STARTED ===
+
+Q: What is Claude?
+A: Claude is an AI assistant made by Anthropic. Claude can help with a wide variety of tasks including writing, analysis, coding, math, research, question answering, creative projects, and more. Claude is designed to be helpful, harmless, and honest.
+
+Q: How do I start using Claude?
+A: Visit claude.ai and create a free account using your email address. After verifying your email, you can start chatting with Claude immediately. No credit card is required for the free plan.
+
+Q: What plans does Claude offer?
+A: Claude offers a Free plan with limited message usage, a Pro plan with higher limits and priority access, and Teams/Enterprise plans for organizations. Visit claude.ai/pricing for the most current pricing details.
+
+Q: What is Claude's context window?
+A: The context window determines how much text Claude can process in a single conversation. Claude supports large context windows allowing long documents, extensive conversations, or large codebases to be analyzed in one session. Specific limits vary by model and plan.
+
+=== CAPABILITIES & LIMITATIONS ===
+
+Q: Can Claude browse the internet or access real-time information?
+A: By default, Claude does not have internet access and cannot browse the web or retrieve real-time information. Claude's knowledge has a training cutoff date. Some Claude integrations or tools may provide web search capabilities — check the specific product you're using.
+
+Q: Can Claude generate images?
+A: Claude is a text-based AI and does not generate images natively. Claude can describe images provided to it and can write prompts for image generation tools, but does not create images itself.
+
+Q: Can Claude remember conversations from previous sessions?
+A: By default, Claude does not retain memory between separate conversations. Each new conversation starts fresh. Memory features may be available in some Claude products — check the specific product documentation.
+
+Q: What languages does Claude support?
+A: Claude can communicate in many languages including English, Spanish, French, German, Chinese (Simplified and Traditional), Japanese, Korean, Portuguese, Italian, Dutch, Russian, Arabic, and many others. Claude performs best in English but is capable in many other languages.
+
+Q: Can Claude help with coding?
+A: Yes. Claude can write, review, debug, and explain code in many programming languages including Python, JavaScript, TypeScript, Java, C/C++, Go, Rust, Ruby, PHP, Swift, and more. Claude can also help with architecture decisions, documentation, and testing.
+
+Q: Does Claude write essays or content on demand?
+A: Yes. Claude can help write essays, articles, emails, reports, stories, and other content. Claude aims to be transparent when asked if content is AI-generated. Content should be reviewed for accuracy before use.
+
+Q: What topics will Claude not discuss?
+A: Claude will not help with creating weapons of mass destruction, generating illegal content involving minors, facilitating serious harm to individuals, or producing content that violates Anthropic's usage policies. Claude may also decline requests that seem likely to cause significant harm.
+
+=== CLAUDE API ===
+
+Q: How do I access the Claude API?
+A: Sign up at console.anthropic.com. Once your account is approved, you can create API keys under "API Keys" in the console. API access requires a valid payment method on file.
+
+Q: What are the rate limits for the Claude API?
+A: Rate limits depend on your tier and the model you're using. Limits are measured in requests per minute (RPM) and tokens per minute (TPM). Your current limits are displayed in the Anthropic console. Limits increase as you spend more on the API.
+
+Q: Which Claude models are available via the API?
+A: Available models include Claude 3 Opus (most capable), Claude 3 Sonnet (balanced), Claude 3 Haiku (fastest), and newer versions as they are released. Check the Anthropic documentation for the current list of available models and their capabilities.
+
+Q: How do I handle API errors in my application?
+A: Common API errors include 400 (invalid request), 401 (invalid API key), 429 (rate limit exceeded), and 529 (overloaded). Implement exponential backoff for 429 and 529 errors. Check your API key validity for 401 errors. Review the Anthropic API documentation for full error code details.
+
+Q: Can I use Claude API for commercial applications?
+A: Yes, the Claude API is available for commercial use under Anthropic's usage policies. Review the terms of service and usage policies at anthropic.com before deploying commercial applications.
+
+=== SAFETY & PRIVACY ===
+
+Q: Does Anthropic use my conversations to train Claude?
+A: Anthropic's data usage policies vary by plan and product. By default, conversations on Claude.ai may be reviewed to improve safety and performance. The API has different data retention policies. Review Anthropic's privacy policy at anthropic.com/privacy for complete details.
+
+Q: How does Claude handle sensitive or personal information I share?
+A: Do not share sensitive personal information (Social Security numbers, credit card numbers, passwords) with Claude. While Anthropic takes data security seriously, Claude is not designed as a secure vault for sensitive data. Use appropriate data handling practices for your use case.
+
+Q: Is Claude's output always accurate and factual?
+A: No. Claude can make mistakes, hallucinate facts, or provide outdated information. Always verify important information from authoritative sources. Claude is a helpful assistant but not a replacement for professional advice in legal, medical, financial, or safety-critical situations.
+
+Q: Can I report harmful or problematic responses from Claude?
+A: Yes. Use the thumbs down icon or feedback button in Claude.ai to report problematic responses. You can also report serious concerns to Anthropic at anthropic.com/contact.
+
+=== ACCOUNT & BILLING ===
+
+Q: How do I upgrade my Claude plan?
+A: In Claude.ai, click on your account name in the bottom left, select "Upgrade Plan", and follow the instructions to add your payment details and select a plan. Changes take effect immediately.
+
+Q: How do I cancel my Claude subscription?
+A: Go to Account Settings in Claude.ai, select "Billing", then "Cancel Subscription". You'll retain access until the end of your billing period. Note that refunds for partial months are generally not provided.
+
+Q: I'm being charged but can't access Claude Pro features. What should I do?
+A: First, confirm you're logged into the correct account associated with the subscription. Check your billing status in Account Settings. If the issue persists, contact Claude support through claude.ai/support with your account email and transaction details.
+
+Q: How do I download my billing receipts?
+A: Go to Account Settings > Billing > Billing History. You can download PDF receipts for each transaction. For business/tax purposes, your business name can be added in billing settings.
+
+=== TROUBLESHOOTING ===
+
+Q: Claude is not responding or the response is very slow. What should I do?
+A: This may indicate high traffic on Anthropic's servers. Try refreshing the page and sending your message again. Check status.anthropic.com for any known outages. If the issue persists, contact support.
+
+Q: I'm getting an "Overloaded" error. What does that mean?
+A: An overloaded error (529) means Anthropic's servers are experiencing high demand. Wait a few minutes and try again. Pro plan users receive priority access during high-traffic periods.
+
+Q: My conversation history is missing. Where did it go?
+A: Claude.ai saves conversations to your account. Check that you're logged into the correct account. Conversations may take a moment to sync. If conversations are missing after verifying your account, contact support with the approximate date/time of the missing conversations.

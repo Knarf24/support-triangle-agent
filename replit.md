@@ -25,3 +25,24 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+
+## Support Triage Agent (`support-triage/`)
+
+Python CLI tool for automated multi-domain support ticket triage.
+
+- **Language**: Python 3.11
+- **AI**: Claude API via Replit AI Integrations (`claude-sonnet-4-6`)
+- **Retrieval**: TF-IDF (scikit-learn) over domain corpus files
+- **Domains**: HackerRank, Claude Help Center, Visa
+
+### Run commands
+```bash
+cd support-triage
+python main.py            # Interactive terminal mode
+python main.py --demo     # Run 8 built-in sample tickets
+python main.py --batch support_issues.csv  # Batch from CSV
+```
+
+### Outputs
+- `support-triage/output.csv` — ticket predictions and responses
+- `support-triage/log.txt` — full reasoning trace per ticket
