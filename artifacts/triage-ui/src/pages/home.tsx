@@ -264,7 +264,7 @@ export default function Home() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">
-                Triage Console
+                Triage360
               </h1>
               <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                 <div className="w-2 h-2 rounded-full bg-success animate-[pulse_2s_ease-in-out_infinite] shadow-[0_0_8px_rgba(0,255,136,0.6)]"></div>

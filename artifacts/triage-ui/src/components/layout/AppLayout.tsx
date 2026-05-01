@@ -21,7 +21,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="md:hidden flex items-center justify-between p-4 border-b border-white/10 bg-background/80 backdrop-blur-md z-20">
         <div className="flex items-center gap-2 text-primary drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">
           <LayoutDashboard className="h-6 w-6" />
-          <span className="font-[family-name:var(--font-display)] font-bold text-lg tracking-wide">Triage Ops</span>
+          <span className="font-[family-name:var(--font-display)] font-bold text-lg tracking-wide">Triage360</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="text-muted-foreground hover:text-white">
           <Menu className="h-5 w-5" />
@@ -36,7 +36,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className={`p-6 border-b border-white/10 flex items-center justify-between ${collapsed ? 'md:justify-center md:px-2' : ''}`}>
           <div className={`flex items-center gap-2 text-primary drop-shadow-[0_0_8px_rgba(0,212,255,0.5)] ${collapsed ? 'md:hidden' : ''}`}>
             <LayoutDashboard className="h-6 w-6" />
-            <span className="font-[family-name:var(--font-display)] font-bold text-lg tracking-wide">Triage Ops</span>
+            <span className="font-[family-name:var(--font-display)] font-bold text-lg tracking-wide">Triage360</span>
           </div>
           {collapsed && <LayoutDashboard className="hidden md:block h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]" />}
         </div>
