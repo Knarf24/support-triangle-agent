@@ -11,6 +11,7 @@ import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square } from
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { SourcesSection } from "@/components/sources-section";
 
 type StreamingMeta = {
   domain: string;
@@ -296,6 +297,8 @@ export default function Home() {
                         </div>
                       </div>
                     )}
+
+                    <SourcesSection docs={displayTicket.retrievedDocs ?? []} />
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground font-mono text-sm space-y-4 opacity-50">
