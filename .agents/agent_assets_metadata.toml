@@ -6,3 +6,9 @@ id = "gDcyA_q4tU1M1e5RwmCor"
 uri = "file://support-triage/output.csv"
 type = "table"
 title = "output.csv — Triage Results (8 tickets)"
+
+[[outputs]]
+id = "3Tq32XiE3MAxL6e3v9ViI"
+uri = "file://support_issues/output.csv"
+type = "table"
+title = "output.csv — 20-ticket submission"
