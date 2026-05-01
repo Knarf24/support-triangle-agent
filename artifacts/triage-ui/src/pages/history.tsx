@@ -1,15 +1,24 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useCallback } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useListTickets } from "@workspace/api-client-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DomainBadge, Domain } from "@/components/domain-badge";
+import { DomainBadge } from "@/components/domain-badge";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
-import { Search, ShieldAlert, CheckCircle2, ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
+import { Search, ShieldAlert, CheckCircle2, ChevronDown, ChevronRight, AlertCircle, Download } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SourcesSection } from "@/components/sources-section";
+
+function escapeCsv(value: unknown): string {
+  const str = value === null || value === undefined ? "" : String(value);
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
 
 export default function History() {
   const { data: tickets, isLoading } = useListTickets();
@@ -18,6 +27,35 @@ export default function History() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourcesFilter, setSourcesFilter] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const exportCsv = useCallback(() => {
+    if (!tickets || tickets.length === 0) return;
+    const headers = [
+      "id", "timestamp", "domain", "confidence_pct",
+      "escalated", "escalation_reason", "escalation_categories",
+      "sources_count", "ticket_text", "response"
+    ];
+    const rows = [...tickets].reverse().map((t) => [
+      t.id,
+      format(new Date(t.createdAt), "yyyy-MM-dd HH:mm:ss"),
+      t.domain,
+      Math.round((t.domainConfidence ?? 0) * 100),
+      t.escalated ? "true" : "false",
+      t.escalationReason ?? "",
+      Array.isArray(t.escalationCategories) ? t.escalationCategories.join(";") : "",
+      Array.isArray(t.retrievedDocs) ? t.retrievedDocs.length : 0,
+      t.ticketText,
+      t.response ?? "",
+    ].map(escapeCsv).join(","));
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `triage-audit-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [tickets]);
 
   const filteredTickets = tickets?.filter(ticket => {
     const matchesSearch = ticket.ticketText.toLowerCase().includes(searchTerm.toLowerCase());
@@ -43,6 +81,17 @@ export default function History() {
             <h1 className="text-3xl font-bold tracking-tight">Audit Log</h1>
             <p className="text-muted-foreground mt-1">Complete history of triaged support interactions.</p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-none font-mono text-xs gap-2 self-start md:self-auto"
+            onClick={exportCsv}
+            disabled={!tickets || tickets.length === 0}
+            data-testid="button-export-csv"
+          >
+            <Download className="w-3.5 h-3.5" />
+            EXPORT CSV
+          </Button>
         </header>
 
         <div className="flex flex-col sm:flex-row gap-4 items-center bg-card p-4 border border-border">

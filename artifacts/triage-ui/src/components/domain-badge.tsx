@@ -9,6 +9,34 @@ interface DomainBadgeProps {
   className?: string;
 }
 
+function ConfidencePip({ value }: { value: number }) {
+  const pct = Math.round(value * 100);
+  const color =
+    pct >= 75
+      ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
+      : pct >= 50
+      ? "text-amber-400 border-amber-500/40 bg-amber-500/10"
+      : "text-red-400 border-red-500/40 bg-red-500/10";
+
+  const barFill =
+    pct >= 75 ? "bg-emerald-400" : pct >= 50 ? "bg-amber-400" : "bg-red-400";
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 font-mono text-[10px] font-bold px-1.5 py-0.5 border ${color} ml-1.5`}
+      title={`Domain confidence: ${pct}%`}
+    >
+      <span className="relative w-12 h-1.5 bg-current/10 rounded-none overflow-hidden shrink-0">
+        <span
+          className={`absolute left-0 top-0 h-full ${barFill} transition-all duration-500`}
+          style={{ width: `${pct}%` }}
+        />
+      </span>
+      {pct}%
+    </span>
+  );
+}
+
 export function DomainBadge({ domain, confidence, className }: DomainBadgeProps) {
   const d = (domain || "unknown").toLowerCase() as Domain;
 
@@ -38,14 +66,12 @@ export function DomainBadge({ domain, confidence, className }: DomainBadgeProps)
   const { color, icon: Icon, label } = config[d] || config.unknown;
 
   return (
-    <Badge variant="outline" className={`font-mono font-semibold rounded-none ${color} ${className}`}>
-      <Icon className="w-3 h-3 mr-1" />
-      {label}
-      {confidence !== undefined && (
-        <span className="ml-2 opacity-75">
-          {Math.round(confidence * 100)}%
-        </span>
-      )}
-    </Badge>
+    <span className={`inline-flex items-center ${className ?? ""}`}>
+      <Badge variant="outline" className={`font-mono font-semibold rounded-none ${color}`}>
+        <Icon className="w-3 h-3 mr-1" />
+        {label}
+      </Badge>
+      {confidence !== undefined && <ConfidencePip value={confidence} />}
+    </span>
   );
 }
