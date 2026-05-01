@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DomainBadge } from "@/components/domain-badge";
-import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X, RotateCcw, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X, RotateCcw, Loader2, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday } from "date-fns";
@@ -76,6 +76,7 @@ export default function Home() {
   const [restoredLabel, setRestoredLabel] = useState("RESTORED");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
+  const [stoppedCopied, setStoppedCopied] = useState(false);
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamingRef = useRef<StreamingState | null>(null);
@@ -227,7 +228,7 @@ export default function Home() {
           ? { ...streamingRef.current, isStreaming: false, stopped: true }
           : null;
         setStreaming(stoppedState);
-        if (stoppedState) setLastStoppedResult(stoppedState);
+        if (stoppedState) { setLastStoppedResult(stoppedState); setStoppedCopied(false); }
         setTicketText(text);
         setRestoredLabel("RESTORED");
         setTextRestored(true);
@@ -394,14 +395,42 @@ export default function Home() {
                     <Ban className="w-4 h-4 text-destructive shrink-0" />
                     <span className="text-[10px] font-mono font-bold text-destructive tracking-widest">PREVIOUS PARTIAL RESULT</span>
                   </div>
-                  <button
-                    data-testid="button-dismiss-stopped"
-                    onClick={() => setLastStoppedResult(null)}
-                    className="text-muted-foreground hover:text-white transition-colors"
-                    aria-label="Dismiss"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      data-testid="button-copy-stopped"
+                      onClick={() => {
+                        if (!lastStoppedResult?.response) return;
+                        navigator.clipboard.writeText(lastStoppedResult.response).then(() => {
+                          setStoppedCopied(true);
+                          setTimeout(() => setStoppedCopied(false), 2000);
+                        }).catch(() => {
+                          toast({ title: "Copy failed", description: "Could not access clipboard. Please copy the text manually.", variant: "destructive" });
+                        });
+                      }}
+                      className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-white transition-colors"
+                      aria-label="Copy partial response"
+                    >
+                      {stoppedCopied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-success" />
+                          <span className="text-success">COPIED</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>COPY</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      data-testid="button-dismiss-stopped"
+                      onClick={() => { setLastStoppedResult(null); setStoppedCopied(false); }}
+                      className="text-muted-foreground hover:text-white transition-colors"
+                      aria-label="Dismiss"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="text-xs font-mono text-muted-foreground/60 truncate mb-2 px-1">
                   {lastStoppedResult.ticketText}
