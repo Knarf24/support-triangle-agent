@@ -118,6 +118,7 @@ export default function Home() {
       if (err instanceof Error && err.name === "AbortError") {
         aborted = true;
         setStreaming((prev) => prev && ({ ...prev, isStreaming: false, stopped: true }));
+        setTicketText(text);
       } else {
         console.error("[triage/stream] Stream error:", err);
         toast({ title: "Error", description: "Failed to process the ticket. Please try again.", variant: "destructive" });
