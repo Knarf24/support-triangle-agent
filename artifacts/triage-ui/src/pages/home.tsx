@@ -385,7 +385,7 @@ export default function Home() {
 
           {/* Results Display */}
           <div className="lg:col-span-7 space-y-6">
-            {lastStoppedResult && streaming && !streaming.stopped && (
+            {lastStoppedResult && streaming && (
               <div
                 data-testid="stopped-result-banner"
                 className="glass-card border-destructive/30 bg-destructive/10 p-4 rounded-xl animate-in fade-in slide-in-from-top-4 duration-300 backdrop-blur-md"
