@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DomainBadge } from "@/components/domain-badge";
-import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -234,14 +234,32 @@ export default function Home() {
                       STOP
                     </Button>
                   ) : (
-                    <Button
-                      data-testid="button-submit"
-                      type="submit"
-                      className="w-full font-bold tracking-wide rounded-none"
-                      disabled={!ticketText.trim()}
-                    >
-                      EXECUTE TRIAGE
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        data-testid="button-submit"
+                        type="submit"
+                        className="w-full font-bold tracking-wide rounded-none"
+                        disabled={!ticketText.trim()}
+                      >
+                        EXECUTE TRIAGE
+                      </Button>
+                      {streaming?.stopped && ticketText.trim() && (
+                        <Button
+                          data-testid="button-retry"
+                          type="button"
+                          variant="outline"
+                          className="w-full font-bold tracking-wide rounded-none border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400 flex items-center gap-2 animate-in fade-in duration-200"
+                          onClick={() => {
+                            const text = ticketText;
+                            setTicketText("");
+                            streamTicket(text);
+                          }}
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          RETRY
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </form>
               </CardContent>
