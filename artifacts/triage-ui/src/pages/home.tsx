@@ -96,10 +96,13 @@ export default function Home() {
               queryClient.invalidateQueries({ queryKey: getListTicketsQueryKey() });
               queryClient.invalidateQueries({ queryKey: getGetTriageStatsQueryKey() });
             }
-          } catch {}
+          } catch (parseErr) {
+            console.warn("[triage/stream] Malformed SSE frame ignored:", line, parseErr);
+          }
         }
       }
-    } catch {
+    } catch (err) {
+      console.error("[triage/stream] Stream error:", err);
       toast({ title: "Error", description: "Failed to process the ticket. Please try again.", variant: "destructive" });
       setStreaming(null);
     } finally {
