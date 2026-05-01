@@ -8,12 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DomainBadge } from "@/components/domain-badge";
-import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X, RotateCcw, Loader2, Copy, Check } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X, RotateCcw, Loader2, Copy, Check, MessageSquare, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday } from "date-fns";
 import { SourcesSection } from "@/components/sources-section";
 import { MultimodalInput } from "@/components/multimodal-input";
+import { ChatMode } from "@/components/chat-mode";
 import type { RetrievedDoc } from "@workspace/api-client-react";
 
 type StreamingMeta = {
@@ -78,6 +79,7 @@ export default function Home() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const [stoppedCopied, setStoppedCopied] = useState(false);
+  const [mode, setMode] = useState<"triage" | "chat">("triage");
   
   const { setDirty } = useUnsavedDraft();
 
@@ -324,6 +326,36 @@ export default function Home() {
             </div>
           </div>
         </header>
+
+        {/* Mode Toggle */}
+        <div className="flex gap-1 p-1 rounded-lg bg-black/40 border border-white/10 w-fit">
+          <button
+            onClick={() => setMode("triage")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[11px] font-mono tracking-[0.14em] uppercase transition-all duration-200 ${
+              mode === "triage"
+                ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,212,255,0.15)]"
+                : "text-muted-foreground hover:text-white"
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            Triage Mode
+          </button>
+          <button
+            onClick={() => setMode("chat")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[11px] font-mono tracking-[0.14em] uppercase transition-all duration-200 ${
+              mode === "chat"
+                ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,212,255,0.15)]"
+                : "text-muted-foreground hover:text-white"
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            Chat Mode
+          </button>
+        </div>
+
+        {mode === "chat" ? (
+          <ChatMode />
+        ) : (
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
           {/* Submission Form */}
@@ -634,6 +666,7 @@ export default function Home() {
             </Card>
           </div>
         </div>
+        )}
       </div>
     </AppLayout>
   );
