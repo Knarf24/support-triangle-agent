@@ -32,8 +32,12 @@ export default function History() {
   const [searchTerm, setSearchTerm] = useState("");
   const [domainFilter, setDomainFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sourcesFilter, setSourcesFilter] = useState<string>("all");
-  const [minSources, setMinSources] = useState<number>(1);
+  const [sourcesFilter, setSourcesFilter] = useState<string>(() => {
+    try { return localStorage.getItem("auditLog_sourcesFilter") ?? "all"; } catch { return "all"; }
+  });
+  const [minSources, setMinSources] = useState<number>(() => {
+    try { return Math.max(1, Number(localStorage.getItem("auditLog_minSources") ?? "1") || 1); } catch { return 1; }
+  });
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const exportCsv = useCallback(() => {
@@ -139,7 +143,7 @@ export default function History() {
             </SelectContent>
           </Select>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Select value={sourcesFilter} onValueChange={(val) => { setSourcesFilter(val); if (val !== "min") setMinSources(1); }}>
+            <Select value={sourcesFilter} onValueChange={(val) => { setSourcesFilter(val); try { localStorage.setItem("auditLog_sourcesFilter", val); } catch {} if (val !== "min") { setMinSources(1); try { localStorage.setItem("auditLog_minSources", "1"); } catch {} } }}>
               <SelectTrigger className="w-full sm:w-[180px] rounded-lg border-white/10 bg-black/40 focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 h-10 font-mono text-xs">
                 <SelectValue placeholder="Sources" />
               </SelectTrigger>
@@ -156,7 +160,7 @@ export default function History() {
                   type="number"
                   min={1}
                   value={minSources}
-                  onChange={(e) => setMinSources(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={(e) => { const v = Math.max(1, parseInt(e.target.value) || 1); setMinSources(v); try { localStorage.setItem("auditLog_minSources", String(v)); } catch {} }}
                   className="w-16 h-10 rounded-lg border-white/10 bg-black/40 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary font-mono text-xs text-center tabular-nums shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
                   data-testid="input-min-sources"
                 />
