@@ -21,7 +21,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="md:hidden flex items-center justify-between p-4 border-b border-white/10 bg-background/80 backdrop-blur-md z-20">
         <div className="flex items-center gap-2 text-primary drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">
           <LayoutDashboard className="h-6 w-6" />
-          <span className="font-bold text-lg tracking-tight">Triage Ops</span>
+          <span className="font-[family-name:var(--font-display)] font-bold text-lg tracking-wide">Triage Ops</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="text-muted-foreground hover:text-white">
           <Menu className="h-5 w-5" />
@@ -36,7 +36,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className={`p-6 border-b border-white/10 flex items-center justify-between ${collapsed ? 'md:justify-center md:px-2' : ''}`}>
           <div className={`flex items-center gap-2 text-primary drop-shadow-[0_0_8px_rgba(0,212,255,0.5)] ${collapsed ? 'md:hidden' : ''}`}>
             <LayoutDashboard className="h-6 w-6" />
-            <span className="font-bold text-lg tracking-tight">Triage Ops</span>
+            <span className="font-[family-name:var(--font-display)] font-bold text-lg tracking-wide">Triage Ops</span>
           </div>
           {collapsed && <LayoutDashboard className="hidden md:block h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]" />}
         </div>
@@ -56,7 +56,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 }
               >
                 <item.icon className={`h-5 w-5 ${isActive ? 'drop-shadow-[0_0_5px_rgba(0,212,255,0.8)]' : 'group-hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]'}`} />
-                <span className={`font-medium tracking-wide ${collapsed ? 'md:hidden' : ''}`}>{item.label}</span>
+                <span className={`font-sans font-semibold tracking-wide text-sm ${collapsed ? 'md:hidden' : ''}`}>{item.label}</span>
                 {isActive && <div className="absolute inset-0 bg-primary/5 blur-md -z-10 rounded-md"></div>}
               </Link>
             );
@@ -65,10 +65,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         <div className="p-4 border-t border-white/10 mt-auto bg-black/20">
           <div className={`text-[10px] font-mono text-muted-foreground flex items-center ${collapsed ? 'md:justify-center' : 'justify-between'}`}>
-            <span className={`${collapsed ? 'md:hidden' : ''}`}>STATUS</span>
+            <span className={`tracking-[0.2em] ${collapsed ? 'md:hidden' : ''}`}>STATUS</span>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-success animate-[pulse_2s_ease-in-out_infinite] shadow-[0_0_8px_rgba(0,255,136,0.6)]"></div>
-              <span className={`text-success font-bold tracking-wider ${collapsed ? 'md:hidden' : ''}`}>ONLINE</span>
+              <span className={`text-success font-bold tracking-[0.2em] ${collapsed ? 'md:hidden' : ''}`}>ONLINE</span>
             </div>
           </div>
         </div>

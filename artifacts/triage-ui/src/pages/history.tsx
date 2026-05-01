@@ -79,13 +79,13 @@ export default function History() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-6 relative">
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/50 via-primary/10 to-transparent"></div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">Audit Log</h1>
-            <p className="text-muted-foreground mt-1 font-mono text-sm">Complete history of triaged support interactions.</p>
+            <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">Audit Log</h1>
+            <p className="text-muted-foreground mt-1 font-sans text-sm">Complete history of triaged support interactions.</p>
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-lg font-mono text-xs gap-2 self-start md:self-auto border-white/20 hover:border-primary hover:bg-primary/10 hover:text-primary transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)] bg-black/40 backdrop-blur-md"
+            className="rounded-lg font-sans font-semibold text-xs tracking-[0.12em] gap-2 self-start md:self-auto border-white/20 hover:border-primary hover:bg-primary/10 hover:text-primary transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)] bg-black/40 backdrop-blur-md"
             onClick={exportCsv}
             disabled={!tickets || tickets.length === 0}
             data-testid="button-export-csv"
@@ -201,12 +201,12 @@ export default function History() {
                         </TableCell>
                         <TableCell>
                           {ticket.escalated ? (
-                            <div className="flex items-center text-destructive text-[10px] font-mono font-bold tracking-widest gap-1.5 drop-shadow-[0_0_5px_rgba(255,68,68,0.5)]">
+                            <div className="flex items-center text-destructive text-[10px] font-mono font-bold tracking-[0.15em] gap-1.5 drop-shadow-[0_0_5px_rgba(255,68,68,0.5)]">
                               <ShieldAlert className="w-3.5 h-3.5" />
                               ESCALATED
                             </div>
                           ) : (
-                            <div className="flex items-center text-success text-[10px] font-mono font-bold tracking-widest gap-1.5 drop-shadow-[0_0_5px_rgba(0,255,136,0.5)]">
+                            <div className="flex items-center text-success text-[10px] font-mono font-bold tracking-[0.15em] gap-1.5 drop-shadow-[0_0_5px_rgba(0,255,136,0.5)]">
                               <CheckCircle2 className="w-3.5 h-3.5" />
                               RESOLVED
                             </div>
@@ -233,7 +233,7 @@ export default function History() {
                           <TableCell colSpan={7} className="p-0">
                             <div className="px-8 py-6 space-y-6 animate-in slide-in-from-top-2 fade-in duration-300">
                               <div className="space-y-2">
-                                <h4 className="text-[10px] font-mono font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                                <h4 className="text-[10px] font-mono font-bold text-muted-foreground tracking-[0.2em] flex items-center gap-2">
                                   <span className="w-1 h-1 rounded-full bg-white/20"></span>
                                   INPUT
                                 </h4>
@@ -245,11 +245,11 @@ export default function History() {
                               {ticket.escalated ? (
                                 <div className="space-y-3 border border-destructive/30 bg-destructive/10 p-4 rounded-lg shadow-[inset_0_0_20px_rgba(255,68,68,0.05)] relative overflow-hidden">
                                   <div className="absolute top-0 left-0 w-1 h-full bg-destructive"></div>
-                                  <h4 className="text-[10px] font-mono font-bold text-destructive tracking-widest flex items-center gap-2">
+                                  <h4 className="text-[10px] font-mono font-bold text-destructive tracking-[0.2em] flex items-center gap-2">
                                     <AlertCircle className="w-3.5 h-3.5" />
                                     ESCALATION REASON
                                   </h4>
-                                  <p className="text-sm font-medium text-white/90">{ticket.escalationReason}</p>
+                                  <p className="text-sm font-sans font-medium text-white/90">{ticket.escalationReason}</p>
                                   {ticket.escalationCategories?.length > 0 && (
                                     <div className="flex gap-2 flex-wrap pt-1">
                                       {ticket.escalationCategories.map((cat: string) => (
@@ -262,11 +262,11 @@ export default function History() {
                                 </div>
                               ) : ticket.response ? (
                                 <div className="space-y-2">
-                                  <h4 className="text-[10px] font-mono font-bold text-success tracking-widest flex items-center gap-2">
+                                  <h4 className="text-[10px] font-mono font-bold text-success tracking-[0.2em] flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_5px_rgba(0,255,136,0.8)]"></span>
                                     AI RESPONSE
                                   </h4>
-                                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20 text-sm leading-relaxed whitespace-pre-wrap max-h-[200px] overflow-y-auto font-mono text-white/90 shadow-[inset_0_0_20px_rgba(0,212,255,0.03)]">
+                                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20 text-sm font-sans leading-relaxed whitespace-pre-wrap max-h-[200px] overflow-y-auto text-white/90 shadow-[inset_0_0_20px_rgba(0,212,255,0.03)]">
                                     {ticket.response}
                                   </div>
                                 </div>
@@ -279,7 +279,7 @@ export default function History() {
                               )}
 
                               {!hasDocs && (
-                                <div className="flex items-center gap-2 pt-2 border-t border-white/5 mt-4 text-[10px] font-mono text-muted-foreground/40 tracking-widest">
+                                <div className="flex items-center gap-2 pt-2 border-t border-white/5 mt-4 text-[10px] font-mono text-muted-foreground/40 tracking-[0.2em]">
                                   <div className="w-1 h-1 rounded-full bg-muted-foreground/30"></div>
                                   NO SOURCE DOCUMENTS
                                 </div>

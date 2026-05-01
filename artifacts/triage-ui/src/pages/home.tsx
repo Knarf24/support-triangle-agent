@@ -253,18 +253,18 @@ export default function Home() {
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/50 via-primary/10 to-transparent"></div>
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">
+              <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">
                 Triage Console
               </h1>
               <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                 <div className="w-2 h-2 rounded-full bg-success animate-[pulse_2s_ease-in-out_infinite] shadow-[0_0_8px_rgba(0,255,136,0.6)]"></div>
-                <span className="text-[10px] font-mono font-bold text-success tracking-widest">SYSTEM ACTIVE</span>
+                <span className="text-[10px] font-mono font-bold text-success tracking-[0.2em]">SYSTEM ACTIVE</span>
               </div>
             </div>
-            <p className="text-muted-foreground text-sm font-mono">Submit support tickets for instant classification and routing.</p>
+            <p className="text-muted-foreground text-sm font-sans">Submit support tickets for instant classification and routing.</p>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <div className="text-[10px] font-mono text-muted-foreground tracking-widest">TICKETS TODAY</div>
+            <div className="text-[10px] font-mono text-muted-foreground tracking-[0.2em]">TICKETS TODAY</div>
             <div className="text-2xl font-bold font-mono text-primary drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
               {ticketsToday}
             </div>
@@ -280,7 +280,7 @@ export default function Home() {
                   <Send className="w-4 h-4" />
                   NEW INPUT STREAM
                 </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground font-mono">Paste customer query here for analysis.</CardDescription>
+                <CardDescription className="text-xs text-muted-foreground font-sans">Paste customer query here for analysis.</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -329,7 +329,7 @@ export default function Home() {
                       data-testid="button-stop"
                       type="button"
                       variant="outline"
-                      className="w-full font-bold font-mono tracking-widest rounded-lg flex items-center gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:text-primary relative overflow-hidden group"
+                      className="w-full font-sans font-bold tracking-[0.15em] rounded-lg flex items-center gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:text-primary relative overflow-hidden group"
                       onClick={handleStop}
                     >
                       <div className="absolute inset-0 bg-primary/10 w-full animate-[shimmer_2s_infinite] -translate-x-full group-hover:animate-none"></div>
@@ -341,7 +341,7 @@ export default function Home() {
                       <Button
                         data-testid="button-submit"
                         type="submit"
-                        className="w-full font-bold font-mono tracking-widest rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(0,212,255,0.3)] hover:shadow-[0_0_25px_rgba(0,212,255,0.5)] transition-all duration-300"
+                        className="w-full font-sans font-bold tracking-[0.15em] rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(0,212,255,0.3)] hover:shadow-[0_0_25px_rgba(0,212,255,0.5)] transition-all duration-300"
                         disabled={!ticketText.trim()}
                       >
                         EXECUTE TRIAGE
@@ -351,7 +351,7 @@ export default function Home() {
                           data-testid="button-retry"
                           type="button"
                           variant="outline"
-                          className="w-full font-bold font-mono tracking-widest rounded-lg border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300 animate-in fade-in duration-200"
+                          className="w-full font-sans font-bold tracking-[0.15em] rounded-lg border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300 animate-in fade-in duration-200"
                           onClick={() => {
                             const text = ticketText;
                             setTicketText("");
@@ -452,12 +452,12 @@ export default function Home() {
                         <div className="w-px h-6 bg-white/10 hidden sm:block"></div>
                         
                         {displayTicket.escalated ? (
-                          <Badge variant="destructive" className="rounded-md font-mono text-[10px] tracking-widest flex items-center gap-1.5 shadow-[0_0_10px_rgba(255,68,68,0.3)] px-2 py-1" data-testid="status-escalated">
+                          <Badge variant="destructive" className="rounded-md font-mono text-[10px] tracking-[0.15em] flex items-center gap-1.5 shadow-[0_0_10px_rgba(255,68,68,0.3)] px-2 py-1" data-testid="status-escalated">
                             <ShieldAlert className="w-3.5 h-3.5" />
                             ESCALATED
                           </Badge>
                         ) : (
-                          <Badge className="bg-success/10 text-success border border-success/30 rounded-md font-mono text-[10px] tracking-widest flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,255,136,0.2)] px-2 py-1" data-testid="status-auto-responded">
+                          <Badge className="bg-success/10 text-success border border-success/30 rounded-md font-mono text-[10px] tracking-[0.15em] flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,255,136,0.2)] px-2 py-1" data-testid="status-auto-responded">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             AUTO-RESPONDED
                           </Badge>
@@ -473,7 +473,7 @@ export default function Home() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2 md:col-span-2">
-                        <h4 className="text-[10px] font-mono font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                        <h4 className="text-[10px] font-mono font-bold text-muted-foreground tracking-[0.2em] flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-white/20"></span>
                           ORIGINAL INPUT
                         </h4>
@@ -487,7 +487,7 @@ export default function Home() {
                           <div className="space-y-4 border border-destructive/30 bg-destructive/10 p-5 rounded-lg shadow-[inset_0_0_20px_rgba(255,68,68,0.05)] relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-1 h-full bg-destructive"></div>
                             <div>
-                              <h4 className="text-[10px] font-mono font-bold text-destructive tracking-widest flex items-center gap-2 mb-3">
+                              <h4 className="text-[10px] font-mono font-bold text-destructive tracking-[0.2em] flex items-center gap-2 mb-3">
                                 <AlertCircle className="w-4 h-4" />
                                 ESCALATION REASON
                               </h4>
@@ -505,13 +505,13 @@ export default function Home() {
                           </div>
                         ) : (
                           <div className="space-y-2 relative">
-                            <h4 className="text-[10px] font-mono font-bold text-success tracking-widest flex items-center gap-2">
+                            <h4 className="text-[10px] font-mono font-bold text-success tracking-[0.2em] flex items-center gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_5px_rgba(0,255,136,0.8)]"></span>
                               AI RESPONSE
                             </h4>
                             <div
                               data-testid="text-response"
-                              className="p-5 bg-primary/5 rounded-lg border border-primary/20 text-sm leading-relaxed whitespace-pre-wrap min-h-[120px] text-white/90 shadow-[inset_0_0_20px_rgba(0,212,255,0.03)]"
+                              className="p-5 bg-primary/5 rounded-lg border border-primary/20 text-sm font-sans leading-relaxed whitespace-pre-wrap min-h-[120px] text-white/90 shadow-[inset_0_0_20px_rgba(0,212,255,0.03)]"
                             >
                               {displayTicket.response}
                               {streaming?.isStreaming && !displayTicket.escalated && (

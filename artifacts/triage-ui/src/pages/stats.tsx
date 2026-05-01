@@ -66,8 +66,8 @@ export default function Stats() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-6 relative">
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/50 via-primary/10 to-transparent"></div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">System Metrics</h1>
-            <p className="text-muted-foreground mt-1 font-mono text-sm">Aggregate performance and routing statistics.</p>
+            <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">System Metrics</h1>
+            <p className="text-muted-foreground mt-1 font-sans text-sm">Aggregate performance and routing statistics.</p>
           </div>
         </header>
 
@@ -123,7 +123,7 @@ export default function Stats() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
             <CardHeader className="border-b border-white/5 bg-black/20 pb-4">
-              <CardTitle className="text-xs font-mono font-bold text-primary tracking-widest flex items-center gap-2">
+              <CardTitle className="text-xs font-mono font-bold text-primary tracking-[0.2em] flex items-center gap-2">
                 <Layers className="w-4 h-4" />
                 VOLUME BY DOMAIN
               </CardTitle>
@@ -155,7 +155,7 @@ export default function Stats() {
 
           <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
             <CardHeader className="border-b border-white/5 bg-black/20 pb-4">
-              <CardTitle className="text-xs font-mono font-bold text-primary tracking-widest flex items-center gap-2">
+              <CardTitle className="text-xs font-mono font-bold text-primary tracking-[0.2em] flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
                 SYSTEM EFFICIENCY
               </CardTitle>
@@ -191,7 +191,7 @@ export default function Stats() {
                     <span className="text-5xl font-bold font-mono tracking-tighter text-success drop-shadow-[0_0_8px_rgba(0,255,136,0.6)]">
                       <AnimatedCounter value={autoResolvedRate} />%
                     </span>
-                    <span className="text-[10px] font-mono text-muted-foreground mt-1 tracking-widest font-bold">AUTO-RESOLVED</span>
+                    <span className="text-[10px] font-mono text-muted-foreground mt-1 tracking-[0.2em] font-bold">AUTO-RESOLVED</span>
                   </div>
                 </div>
               )}
@@ -202,7 +202,7 @@ export default function Stats() {
         {/* Recent Activity */}
         <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
           <CardHeader className="border-b border-white/5 bg-black/20 pb-4">
-            <CardTitle className="text-xs font-mono font-bold text-primary tracking-widest flex items-center gap-2">
+            <CardTitle className="text-xs font-mono font-bold text-primary tracking-[0.2em] flex items-center gap-2">
               <Activity className="w-4 h-4" />
               RECENT ACTIVITY
             </CardTitle>
@@ -231,11 +231,11 @@ export default function Stats() {
                     </div>
                     <div className="flex items-center gap-4">
                       {ticket.escalated ? (
-                        <Badge variant="destructive" className="rounded font-mono text-[9px] tracking-widest px-1.5 py-0.5 shadow-[0_0_5px_rgba(255,68,68,0.3)]">
+                        <Badge variant="destructive" className="rounded font-mono text-[9px] tracking-[0.15em] px-1.5 py-0.5 shadow-[0_0_5px_rgba(255,68,68,0.3)]">
                           ESCALATED
                         </Badge>
                       ) : (
-                        <Badge className="bg-success/10 text-success border-success/30 rounded font-mono text-[9px] tracking-widest px-1.5 py-0.5 shadow-[0_0_5px_rgba(0,255,136,0.2)]">
+                        <Badge className="bg-success/10 text-success border-success/30 rounded font-mono text-[9px] tracking-[0.15em] px-1.5 py-0.5 shadow-[0_0_5px_rgba(0,255,136,0.2)]">
                           RESOLVED
                         </Badge>
                       )}
@@ -261,7 +261,7 @@ function StatCard({ title, value, icon: Icon, loading, className, valueClassName
       <CardContent className="p-6">
         <div className="flex items-center justify-between space-x-4">
           <div className="flex flex-col space-y-3">
-            <p className="text-[10px] font-mono font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+            <p className="text-[10px] font-mono font-bold text-muted-foreground tracking-[0.2em] flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-white/20"></span>
               {title}
             </p>
