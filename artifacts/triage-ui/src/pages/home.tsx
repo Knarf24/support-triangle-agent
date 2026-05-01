@@ -307,6 +307,9 @@ export default function Home() {
                           {streaming?.isStreaming && !displayTicket.escalated && (
                             <span className="inline-block w-[2px] h-[1em] bg-emerald-400 ml-0.5 animate-[blink_1s_step-end_infinite] align-text-bottom" />
                           )}
+                          {streaming?.stopped && (
+                            <span className="inline-block ml-1 text-xs italic text-muted-foreground/70 font-mono select-none">▌ [response cut off]</span>
+                          )}
                         </div>
                       </div>
                     )}
