@@ -73,5 +73,9 @@
     "vite": "catalog:",
     "wouter": "^3.3.5",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^5.7.284",
+    "tesseract.js": "^7.0.0"
   }
 }

@@ -19,6 +19,7 @@ export const HealthCheckResponse = zod.object({
  */
 export const TriageTicketBody = zod.object({
   ticketText: zod.string(),
+  inputMethod: zod.string().optional(),
 });
 
 export const TriageTicketResponse = zod.object({
@@ -38,6 +39,7 @@ export const TriageTicketResponse = zod.object({
     }),
   ),
   response: zod.string(),
+  inputMethod: zod.string().optional(),
   createdAt: zod.string(),
 });
 
@@ -61,6 +63,7 @@ export const ListTicketsResponseItem = zod.object({
     }),
   ),
   response: zod.string(),
+  inputMethod: zod.string().optional(),
   createdAt: zod.string(),
 });
 export const ListTicketsResponse = zod.array(ListTicketsResponseItem);
@@ -89,6 +92,7 @@ export const GetTicketResponse = zod.object({
     }),
   ),
   response: zod.string(),
+  inputMethod: zod.string().optional(),
   createdAt: zod.string(),
 });
 

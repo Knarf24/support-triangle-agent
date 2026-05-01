@@ -74,7 +74,7 @@ router.post("/triage/stream", async (req, res): Promise<void> => {
     return;
   }
 
-  const { ticketText } = parsed.data;
+  const { ticketText, inputMethod = "typed" } = parsed.data;
 
   const { domain, confidence } = classifyDomain(ticketText);
   const { escalated, escalationReason, escalationCategories } = evaluateRisk(ticketText);
@@ -144,6 +144,7 @@ router.post("/triage/stream", async (req, res): Promise<void> => {
       escalationCategories,
       retrievedDocs,
       response: fullResponse,
+      inputMethod,
     })
     .returning();
 

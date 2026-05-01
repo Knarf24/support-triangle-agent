@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday } from "date-fns";
 import { SourcesSection } from "@/components/sources-section";
+import { MultimodalInput } from "@/components/multimodal-input";
 import type { RetrievedDoc } from "@workspace/api-client-react";
 
 type StreamingMeta = {
@@ -66,6 +67,7 @@ function clearDraft() {
 
 export default function Home() {
   const [ticketText, setTicketText] = useState(() => readDraft());
+  const [inputMethod, setInputMethod] = useState<string>("typed");
   const [streaming, setStreaming] = useState<StreamingState | null>(null);
   const [lastStoppedResult, setLastStoppedResult] = useState<StreamingState | null>(null);
   const [suppressHistory, setSuppressHistory] = useState(false);
@@ -82,6 +84,13 @@ export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: history, isLoading: isHistoryLoading } = useListTickets();
+
+  const handleTranscript = useCallback((text: string, method: "voice" | "camera" | "upload") => {
+    setTicketText(text);
+    setInputMethod(method);
+    setSuppressHistory(true);
+    setStreaming(null);
+  }, []);
 
   const ticketsToday = history?.filter((t) => isToday(new Date(t.createdAt))).length ?? 0;
 
@@ -148,7 +157,7 @@ export default function Home() {
       const response = await fetch("/api/triage/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticketText: text }),
+        body: JSON.stringify({ ticketText: text, inputMethod }),
         signal: controller.signal,
       });
 
@@ -201,6 +210,7 @@ export default function Home() {
                 return next;
               });
               clearDraft();
+              setInputMethod("typed");
               setLastStoppedResult(null);
               queryClient.invalidateQueries({ queryKey: getListTicketsQueryKey() });
               queryClient.invalidateQueries({ queryKey: getGetTriageStatsQueryKey() });
@@ -298,6 +308,7 @@ export default function Home() {
                       onBlur={() => setIsFocused(false)}
                       onChange={(e) => {
                         setTicketText(e.target.value);
+                        setInputMethod("typed");
                         if (streaming?.stopped) {
                           setStreaming(null);
                           setSuppressHistory(true);
@@ -316,12 +327,14 @@ export default function Home() {
                       <div className="text-[10px] font-mono text-muted-foreground transition-colors duration-300 group-focus-within:text-primary/70">
                         {ticketText.length} / {MAX_CHARS}
                       </div>
-                      {ticketText.length >= MAX_CHARS * 0.9 && (
-                        <div className="text-[10px] font-mono text-destructive animate-pulse">
-                          APPROACHING LIMIT
-                        </div>
-                      )}
+                      <MultimodalInput onTranscript={handleTranscript} disabled={isSubmitting} />
                     </div>
+                    
+                    {ticketText.length >= MAX_CHARS * 0.9 && (
+                      <div className="text-[10px] font-mono text-destructive animate-pulse mt-2 px-1">
+                        APPROACHING LIMIT
+                      </div>
+                    )}
                   </div>
 
                   {isSubmitting ? (

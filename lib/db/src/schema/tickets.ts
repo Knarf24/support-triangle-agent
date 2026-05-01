@@ -19,6 +19,7 @@ export const ticketsTable = pgTable("tickets", {
   escalationCategories: jsonb("escalation_categories").$type<string[]>().notNull().default([]),
   retrievedDocs: jsonb("retrieved_docs").$type<RetrievedDoc[]>().notNull().default([]),
   response: text("response").notNull().default(""),
+  inputMethod: text("input_method").notNull().default("typed"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

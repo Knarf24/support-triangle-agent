@@ -8,9 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
-import { Search, ShieldAlert, CheckCircle2, ChevronDown, ChevronRight, AlertCircle, Download } from "lucide-react";
+import { Search, ShieldAlert, CheckCircle2, ChevronDown, ChevronRight, AlertCircle, Download, Mic, Camera, Paperclip } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SourcesSection } from "@/components/sources-section";
+
+function InputMethodBadge({ method }: { method: string }) {
+  if (method === "voice") return <span className="inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 tracking-wider"><Mic className="w-2.5 h-2.5" />VOICE</span>;
+  if (method === "camera") return <span className="inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#D97757]/10 text-[#D97757] border border-[#D97757]/20 tracking-wider"><Camera className="w-2.5 h-2.5" />CAM</span>;
+  if (method === "upload") return <span className="inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded bg-success/10 text-success border border-success/20 tracking-wider"><Paperclip className="w-2.5 h-2.5" />FILE</span>;
+  return null;
+}
 
 function escapeCsv(value: unknown): string {
   const str = value === null || value === undefined ? "" : String(value);
@@ -191,7 +198,12 @@ export default function History() {
                           </div>
                         </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground group-hover:text-primary transition-colors">
-                          #{ticket.id.toString().padStart(4, '0')}
+                          <div className="flex flex-col gap-1">
+                            #{ticket.id.toString().padStart(4, '0')}
+                            {ticket.inputMethod && ticket.inputMethod !== "typed" && (
+                              <InputMethodBadge method={ticket.inputMethod} />
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="font-mono text-xs text-white/80">
                           {format(new Date(ticket.createdAt), "MMM dd, HH:mm:ss")}
