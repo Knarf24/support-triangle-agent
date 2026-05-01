@@ -1,22 +1,22 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Support Triage Agent API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: triage
+    description: Ticket triage operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +24,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /triage:
+    post:
+      operationId: triageTicket
+      tags: [triage]
+      summary: Submit a support ticket for triage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TriageRequest"
+      responses:
+        "200":
+          description: Triage result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketResult"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tickets:
+    get:
+      operationId: listTickets
+      tags: [triage]
+      summary: List all processed tickets
+      responses:
+        "200":
+          description: List of tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TicketResult"
+
+  /tickets/{id}:
+    get:
+      operationId: getTicket
+      tags: [triage]
+      summary: Get a single ticket by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ticket result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketResult"
+        "404":
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /triage/stats:
+    get:
+      operationId: getTriageStats
+      tags: [triage]
+      summary: Get triage summary statistics
+      responses:
+        "200":
+          description: Stats summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TriageStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +113,88 @@ components:
       required:
         - status
 
+    TriageRequest:
+      type: object
+      properties:
+        ticketText:
+          type: string
+      required:
+        - ticketText
+
+    TicketResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        ticketText:
+          type: string
+        domain:
+          type: string
+        domainConfidence:
+          type: number
+        escalated:
+          type: boolean
+        escalationReason:
+          type: string
+        escalationCategories:
+          type: array
+          items:
+            type: string
+        retrievedDocs:
+          type: array
+          items:
+            type: string
+        response:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - ticketText
+        - domain
+        - domainConfidence
+        - escalated
+        - escalationReason
+        - escalationCategories
+        - retrievedDocs
+        - response
+        - createdAt
+
+    TriageStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        autoResponded:
+          type: integer
+        escalated:
+          type: integer
+        byDomain:
+          type: object
+          properties:
+            hackerrank:
+              type: integer
+            claude:
+              type: integer
+            visa:
+              type: integer
+            unknown:
+              type: integer
+          required:
+            - hackerrank
+            - claude
+            - visa
+            - unknown
+      required:
+        - total
+        - autoResponded
+        - escalated
+        - byDomain
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

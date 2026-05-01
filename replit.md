@@ -26,6 +26,23 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
 
+## Web App (`artifacts/triage-ui/`)
+
+React + Vite frontend for the triage agent. Accessible at preview path `/`.
+- Three pages: Triage Console (`/`), History (`/history`), Stats (`/stats`)
+- Calls the Express API (`artifacts/api-server/`) for all data
+- Built with Tailwind, shadcn/ui, Recharts, React Query
+
+## API Server (`artifacts/api-server/`)
+
+Express 5 backend serving:
+- `POST /api/triage` — process a ticket (classify, retrieve, generate response)
+- `GET /api/tickets` — list ticket history
+- `GET /api/tickets/:id` — get single ticket
+- `GET /api/triage/stats` — summary stats
+
+Triage logic is in `artifacts/api-server/src/lib/triage.ts` — TypeScript port of the Python classifier and risk evaluator, using the Anthropic AI integration for response generation.
+
 ## Support Triage Agent (`support-triage/`)
 
 Python CLI tool for automated multi-domain support ticket triage.
