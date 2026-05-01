@@ -200,6 +200,8 @@ components:
           type: string
         url:
           type: string
+        section:
+          type: string
       required:
         - title
         - content

@@ -10,4 +10,5 @@ export interface RetrievedDoc {
   title: string;
   content: string;
   url?: string;
+  section?: string;
 }

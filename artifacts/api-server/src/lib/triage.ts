@@ -84,23 +84,53 @@ export function extractDocTitle(chunk: string): string {
   return chunk.slice(0, 60) + (chunk.length > 60 ? "…" : "");
 }
 
-let corpusCache: Record<string, string[]> | null = null;
+interface CorpusChunk {
+  chunk: string;
+  section: string;
+}
 
-function loadCorpus(): Record<string, string[]> {
+let corpusCache: Record<string, CorpusChunk[]> | null = null;
+
+function parseCorpusWithSections(text: string): CorpusChunk[] {
+  const results: CorpusChunk[] = [];
+  let currentSection = "";
+  let currentLines: string[] = [];
+
+  function flush() {
+    const chunk = currentLines.join("\n").trim();
+    if (chunk && chunk.length > 30) {
+      results.push({ chunk, section: currentSection });
+    }
+    currentLines = [];
+  }
+
+  for (const line of text.split("\n")) {
+    const sectionMatch = line.trim().match(/^===\s*(.+?)\s*===$/);
+    if (sectionMatch) {
+      flush();
+      currentSection = sectionMatch[1];
+    } else if (/^Q:/.test(line) && currentLines.length > 0) {
+      flush();
+      currentLines.push(line);
+    } else {
+      currentLines.push(line);
+    }
+  }
+  flush();
+  return results;
+}
+
+function loadCorpus(): Record<string, CorpusChunk[]> {
   if (corpusCache) return corpusCache;
 
   const corpusDir = join(process.cwd(), "../../support-triage/corpus");
   const domains = ["hackerrank", "claude", "visa"];
-  const corpus: Record<string, string[]> = {};
+  const corpus: Record<string, CorpusChunk[]> = {};
 
   for (const domain of domains) {
     try {
       const text = readFileSync(join(corpusDir, `${domain}.txt`), "utf-8");
-      const chunks = text
-        .split(/\n\n+/)
-        .map((c) => c.trim())
-        .filter((c) => c.length > 30);
-      corpus[domain] = chunks;
+      corpus[domain] = parseCorpusWithSections(text);
     } catch {
       corpus[domain] = [];
     }
@@ -176,17 +206,17 @@ export function retrieveDocs(ticket: string, domain: string): RetrievedDoc[] {
   const ticketWords = lower.split(/\s+/).filter((w) => w.length > 3);
 
   const domainsToSearch = domain === "unknown" ? ["hackerrank", "claude", "visa"] : [domain];
-  const scored: Array<{ chunk: string; score: number; domain: string }> = [];
+  const scored: Array<{ chunk: string; section: string; score: number; domain: string }> = [];
 
   for (const d of domainsToSearch) {
-    const chunks = corpus[d] || [];
-    for (const chunk of chunks) {
+    const items = corpus[d] || [];
+    for (const { chunk, section } of items) {
       const chunkLower = chunk.toLowerCase();
       let score = 0;
       for (const word of ticketWords) {
         if (chunkLower.includes(word)) score += 1;
       }
-      if (score > 0) scored.push({ chunk, score, domain: d });
+      if (score > 0) scored.push({ chunk, section, score, domain: d });
     }
   }
 
@@ -195,6 +225,7 @@ export function retrieveDocs(ticket: string, domain: string): RetrievedDoc[] {
     title: extractDocTitle(s.chunk),
     content: s.chunk,
     url: DOMAIN_HELP_URL[s.domain],
+    ...(s.section ? { section: s.section } : {}),
   }));
 }
 

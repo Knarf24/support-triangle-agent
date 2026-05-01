@@ -42,6 +42,7 @@ class RetrievedDoc(TypedDict, total=False):
     title: str
     content: str
     url: str
+    section: str
 
 
 def _extract_title(chunk: str) -> str:
@@ -57,6 +58,11 @@ def _extract_title(chunk: str) -> str:
 
 def _load_corpus(domain: str) -> list[str]:
     """Load and split corpus file into individual Q&A chunks."""
+    return [chunk for chunk, _ in _load_corpus_with_sections(domain)]
+
+
+def _load_corpus_with_sections(domain: str) -> list[tuple[str, str]]:
+    """Load and split corpus file, returning (chunk, section) pairs."""
     filename = DOMAIN_FILE_MAP.get(domain)
     if not filename:
         return []
@@ -68,14 +74,39 @@ def _load_corpus(domain: str) -> list[str]:
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
-    chunks = re.split(r"\n(?=Q:)", content)
-    chunks = [c.strip() for c in chunks if c.strip() and len(c.strip()) > 50]
-    return chunks
+    current_section = ""
+    current_lines: list[str] = []
+    results: list[tuple[str, str]] = []
+
+    def _flush() -> None:
+        chunk = "\n".join(current_lines).strip()
+        if chunk and len(chunk) > 50:
+            results.append((chunk, current_section))
+        current_lines.clear()
+
+    for line in content.split("\n"):
+        section_match = re.match(r"^===\s*(.+?)\s*===$", line.strip())
+        if section_match:
+            _flush()
+            current_section = section_match.group(1)
+        elif re.match(r"^Q:", line) and current_lines:
+            _flush()
+            current_lines.append(line)
+        else:
+            current_lines.append(line)
+
+    _flush()
+    return results
 
 
 def _load_corpus_with_domain(domain: str) -> list[tuple[str, str]]:
     """Load and split corpus file, returning (chunk, domain) pairs."""
-    return [(chunk, domain) for chunk in _load_corpus(domain)]
+    return [(chunk, domain) for chunk, _ in _load_corpus_with_sections(domain)]
+
+
+def _load_corpus_with_domain_and_section(domain: str) -> list[tuple[str, str, str]]:
+    """Load and split corpus file, returning (chunk, domain, section) triples."""
+    return [(chunk, domain, section) for chunk, section in _load_corpus_with_sections(domain)]
 
 
 def _tfidf_scores(ticket: str, chunks: list[str]) -> np.ndarray:
@@ -137,19 +168,20 @@ def retrieve(
         List of RetrievedDoc dicts with title, content, and url, most relevant first.
     """
     if domain == "unknown":
-        tagged: list[tuple[str, str]] = []
+        tagged3: list[tuple[str, str, str]] = []
         for d in DOMAIN_FILE_MAP:
-            tagged.extend(_load_corpus_with_domain(d))
+            tagged3.extend(_load_corpus_with_domain_and_section(d))
         cache_key = "all"
     else:
-        tagged = _load_corpus_with_domain(domain)
+        tagged3 = _load_corpus_with_domain_and_section(domain)
         cache_key = domain
 
-    if not tagged:
+    if not tagged3:
         return []
 
-    all_chunks = [chunk for chunk, _ in tagged]
-    all_domains = [d for _, d in tagged]
+    all_chunks = [chunk for chunk, _, _ in tagged3]
+    all_domains = [d for _, d, _ in tagged3]
+    all_sections = [s for _, _, s in tagged3]
 
     tfidf = _tfidf_scores(ticket, all_chunks)
     semantic = _semantic_scores(ticket, all_chunks, cache_key)
@@ -172,6 +204,7 @@ def retrieve(
     for i in indices:
         chunk = all_chunks[i]
         chunk_domain = all_domains[i]
+        chunk_section = all_sections[i]
         doc: RetrievedDoc = {
             "title": _extract_title(chunk),
             "content": chunk,
@@ -179,6 +212,8 @@ def retrieve(
         url = DOMAIN_HELP_URL.get(chunk_domain)
         if url:
             doc["url"] = url
+        if chunk_section:
+            doc["section"] = chunk_section
         results.append(doc)
     return results
 

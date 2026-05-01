@@ -21,12 +21,6 @@ export const TriageTicketBody = zod.object({
   ticketText: zod.string(),
 });
 
-export const RetrievedDocSchema = zod.object({
-  title: zod.string(),
-  content: zod.string(),
-  url: zod.string().optional(),
-});
-
 export const TriageTicketResponse = zod.object({
   id: zod.number(),
   ticketText: zod.string(),
@@ -35,7 +29,14 @@ export const TriageTicketResponse = zod.object({
   escalated: zod.boolean(),
   escalationReason: zod.string(),
   escalationCategories: zod.array(zod.string()),
-  retrievedDocs: zod.array(RetrievedDocSchema),
+  retrievedDocs: zod.array(
+    zod.object({
+      title: zod.string(),
+      content: zod.string(),
+      url: zod.string().optional(),
+      section: zod.string().optional(),
+    }),
+  ),
   response: zod.string(),
   createdAt: zod.string(),
 });
@@ -51,7 +52,14 @@ export const ListTicketsResponseItem = zod.object({
   escalated: zod.boolean(),
   escalationReason: zod.string(),
   escalationCategories: zod.array(zod.string()),
-  retrievedDocs: zod.array(RetrievedDocSchema),
+  retrievedDocs: zod.array(
+    zod.object({
+      title: zod.string(),
+      content: zod.string(),
+      url: zod.string().optional(),
+      section: zod.string().optional(),
+    }),
+  ),
   response: zod.string(),
   createdAt: zod.string(),
 });
@@ -72,7 +80,14 @@ export const GetTicketResponse = zod.object({
   escalated: zod.boolean(),
   escalationReason: zod.string(),
   escalationCategories: zod.array(zod.string()),
-  retrievedDocs: zod.array(RetrievedDocSchema),
+  retrievedDocs: zod.array(
+    zod.object({
+      title: zod.string(),
+      content: zod.string(),
+      url: zod.string().optional(),
+      section: zod.string().optional(),
+    }),
+  ),
   response: zod.string(),
   createdAt: zod.string(),
 });
