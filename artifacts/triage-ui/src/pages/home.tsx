@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListTickets, getListTicketsQueryKey, getGetTriageStatsQueryKey } from "@workspace/api-client-react";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -31,18 +31,72 @@ type StreamingState = StreamingMeta & {
   id?: number;
 };
 
+const DRAFT_KEY = "triage-draft";
+
+function readDraft(): string {
+  try {
+    return localStorage.getItem(DRAFT_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function saveDraft(text: string) {
+  try {
+    if (text) {
+      localStorage.setItem(DRAFT_KEY, text);
+    } else {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+  } catch {}
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {}
+}
+
 export default function Home() {
-  const [ticketText, setTicketText] = useState("");
+  const [ticketText, setTicketText] = useState(() => readDraft());
   const [streaming, setStreaming] = useState<StreamingState | null>(null);
   const [lastStoppedResult, setLastStoppedResult] = useState<StreamingState | null>(null);
   const [suppressHistory, setSuppressHistory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [textRestored, setTextRestored] = useState(false);
+  const [restoredLabel, setRestoredLabel] = useState("RESTORED");
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamingRef = useRef<StreamingState | null>(null);
+  const draftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSubmittingRef = useRef(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: history, isLoading: isHistoryLoading } = useListTickets();
+
+  useEffect(() => {
+    const hasDraft = !!readDraft();
+    if (hasDraft) {
+      setRestoredLabel("DRAFT RESTORED");
+      setTextRestored(true);
+      setTimeout(() => setTextRestored(false), 2000);
+    }
+  }, []);
+
+  useEffect(() => {
+    isSubmittingRef.current = isSubmitting;
+  }, [isSubmitting]);
+
+  useEffect(() => {
+    if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+    draftSaveTimerRef.current = setTimeout(() => {
+      if (!isSubmittingRef.current) {
+        saveDraft(ticketText);
+      }
+    }, 500);
+    return () => {
+      if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+    };
+  }, [ticketText]);
 
   const handleStop = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -127,6 +181,7 @@ export default function Home() {
                 if (next) streamingRef.current = next;
                 return next;
               });
+              clearDraft();
               setLastStoppedResult(null);
               queryClient.invalidateQueries({ queryKey: getListTicketsQueryKey() });
               queryClient.invalidateQueries({ queryKey: getGetTriageStatsQueryKey() });
@@ -145,6 +200,7 @@ export default function Home() {
         setStreaming(stoppedState);
         if (stoppedState) setLastStoppedResult(stoppedState);
         setTicketText(text);
+        setRestoredLabel("RESTORED");
         setTextRestored(true);
         setTimeout(() => setTextRestored(false), 2000);
       } else {
@@ -218,7 +274,7 @@ export default function Home() {
                     />
                     {textRestored && (
                       <span className="absolute top-2 right-2 text-xs font-mono font-bold text-emerald-500 bg-card px-1.5 py-0.5 border border-emerald-500/40 animate-in fade-in duration-200">
-                        RESTORED
+                        {restoredLabel}
                       </span>
                     )}
                   </div>
