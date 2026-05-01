@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import History from "@/pages/history";
 import Stats from "@/pages/stats";
+import { UnsavedDraftProvider } from "@/context/unsaved-draft-context";
 
 const queryClient = new QueryClient();
 
@@ -24,10 +25,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
+        <UnsavedDraftProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </UnsavedDraftProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useUnsavedDraft } from "@/context/unsaved-draft-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListTickets, getListTicketsQueryKey, getGetTriageStatsQueryKey } from "@workspace/api-client-react";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -78,6 +79,8 @@ export default function Home() {
   const [isFocused, setIsFocused] = useState(false);
   const [stoppedCopied, setStoppedCopied] = useState(false);
   
+  const { setDirty } = useUnsavedDraft();
+
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamingRef = useRef<StreamingState | null>(null);
   const draftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -117,16 +120,53 @@ export default function Home() {
   }, [isSubmitting]);
 
   useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (ticketText.trim() && !isSubmittingRef.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [ticketText]);
+
+  const allowNextPopStateRef = useRef(false);
+  useEffect(() => {
+    const handlePopState = () => {
+      if (allowNextPopStateRef.current) {
+        allowNextPopStateRef.current = false;
+        return;
+      }
+      if (!ticketText.trim() || isSubmittingRef.current) return;
+      const currentUrl = location.pathname + location.search;
+      history.pushState(null, "", currentUrl);
+      if (window.confirm("You have unsaved draft text. Leave anyway?")) {
+        allowNextPopStateRef.current = true;
+        history.go(-1);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [ticketText]);
+
+  useEffect(() => {
+    setDirty(!!ticketText.trim() && !isSubmitting);
     if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
     draftSaveTimerRef.current = setTimeout(() => {
-      if (!isSubmittingRef.current) {
+      if (!isSubmitting) {
         saveDraft(ticketText);
       }
     }, 500);
     return () => {
       if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
     };
-  }, [ticketText]);
+  }, [ticketText, isSubmitting, setDirty]);
+
+  useEffect(() => {
+    return () => {
+      setDirty(false);
+    };
+  }, [setDirty]);
 
   const handleStop = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -212,6 +252,7 @@ export default function Home() {
                 return next;
               });
               clearDraft();
+              setDirty(false);
               setInputMethod("typed");
               setLastStoppedResult(null);
               queryClient.invalidateQueries({ queryKey: getListTicketsQueryKey() });
@@ -247,7 +288,7 @@ export default function Home() {
         toast({ title: "Stopped", description: "Response stopped — your original text has been restored.", variant: "default" });
       }
     }
-  }, [queryClient, toast]);
+  }, [queryClient, toast, setDirty]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

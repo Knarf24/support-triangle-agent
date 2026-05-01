@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Activity, History, LayoutDashboard, Ticket, Menu } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useUnsavedDraft } from "@/context/unsaved-draft-context";
 
 const navItems = [
   { href: "/", label: "Triage", icon: Ticket },
@@ -12,6 +13,14 @@ const navItems = [
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { isDirty } = useUnsavedDraft();
+
+  function handleNavClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    if (href === location) return;
+    if (isDirty() && !window.confirm("You have unsaved draft text. Leave anyway?")) {
+      e.preventDefault();
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row relative">
@@ -48,6 +57,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-300 relative group
                   ${isActive
                     ? "text-primary bg-primary/10 shadow-[inset_4px_0_0_0_rgba(0,212,255,1)]"
