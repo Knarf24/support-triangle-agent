@@ -42,4 +42,3 @@ packages = ["glibcLocales"]
 [userenv]
 
 [userenv.development]
-GITHUB_PAT = "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"
