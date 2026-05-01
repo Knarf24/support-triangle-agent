@@ -22,9 +22,9 @@ function SourceDoc({ doc, index }: { doc: RetrievedDoc; index: number }) {
           <Badge variant="outline" className="rounded-none font-mono text-[10px] shrink-0 border-primary/30 text-primary">
             DOC {String(index + 1).padStart(2, "0")}
           </Badge>
-          <div className="flex flex-col min-w-0">
+          <div className="flex flex-col gap-0.5 min-w-0">
             {doc.section && (
-              <span className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-wider leading-tight">
+              <span className="inline-flex self-start items-center px-1.5 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 leading-none">
                 {doc.section}
               </span>
             )}
