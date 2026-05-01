@@ -170,6 +170,21 @@ export default function History() {
           </div>
         </div>
 
+        {!isLoading && filteredTickets !== undefined && (
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs font-mono text-muted-foreground tracking-wider" data-testid="filter-result-count">
+              {filteredTickets.length === 0
+                ? "NO RESULTS"
+                : `${filteredTickets.length} ${filteredTickets.length === 1 ? "RESULT" : "RESULTS"}`}
+            </span>
+            {tickets && filteredTickets.length < tickets.length && (
+              <span className="text-[10px] font-mono text-muted-foreground/50 tracking-wider">
+                of {tickets.length} total
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="glass-card rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
           <Table>
             <TableHeader className="bg-black/40 border-b border-white/10">
