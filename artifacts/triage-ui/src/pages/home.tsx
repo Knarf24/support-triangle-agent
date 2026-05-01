@@ -34,6 +34,7 @@ type StreamingState = StreamingMeta & {
 export default function Home() {
   const [ticketText, setTicketText] = useState("");
   const [streaming, setStreaming] = useState<StreamingState | null>(null);
+  const [suppressHistory, setSuppressHistory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
@@ -49,6 +50,7 @@ export default function Home() {
     abortControllerRef.current = controller;
 
     setIsSubmitting(true);
+    setSuppressHistory(false);
     setStreaming({
       ticketText: text,
       domain: "",
@@ -142,7 +144,7 @@ export default function Home() {
     streamTicket(text);
   };
 
-  const displayTicket = streaming ?? (history && history.length > 0 ? history[0] : null);
+  const displayTicket = streaming ?? (suppressHistory ? null : (history && history.length > 0 ? history[0] : null));
 
   return (
     <AppLayout>
@@ -179,7 +181,13 @@ export default function Home() {
                     placeholder="User issue goes here..."
                     className="min-h-[200px] font-mono text-sm resize-none rounded-none focus-visible:ring-primary border-border"
                     value={ticketText}
-                    onChange={(e) => setTicketText(e.target.value)}
+                    onChange={(e) => {
+                      setTicketText(e.target.value);
+                      if (streaming?.stopped) {
+                        setStreaming(null);
+                        setSuppressHistory(true);
+                      }
+                    }}
                     disabled={isSubmitting}
                   />
                   {isSubmitting ? (
