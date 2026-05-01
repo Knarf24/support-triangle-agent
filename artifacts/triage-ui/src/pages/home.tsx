@@ -82,6 +82,7 @@ export default function Home() {
   const streamingRef = useRef<StreamingState | null>(null);
   const draftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSubmittingRef = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: history, isLoading: isHistoryLoading } = useListTickets();
@@ -233,6 +234,7 @@ export default function Home() {
         setRestoredLabel("RESTORED");
         setTextRestored(true);
         setTimeout(() => setTextRestored(false), 2000);
+        setTimeout(() => textareaRef.current?.focus(), 50);
       } else {
         console.error("[triage/stream] Stream error:", err);
         toast({ title: "Error", description: "Failed to process the ticket. Please try again.", variant: "destructive" });
@@ -297,6 +299,7 @@ export default function Home() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="relative group">
                     <Textarea
+                      ref={textareaRef}
                       data-testid="input-ticket"
                       placeholder={!isFocused && !ticketText ? PLACEHOLDER_EXAMPLES[placeholderIndex] : ""}
                       className={`min-h-[240px] font-mono text-sm resize-none rounded-lg transition-all duration-300 bg-black/40 
@@ -361,20 +364,25 @@ export default function Home() {
                         EXECUTE TRIAGE
                       </Button>
                       {streaming?.stopped && ticketText.trim() && (
-                        <Button
-                          data-testid="button-retry"
-                          type="button"
-                          variant="outline"
-                          className="w-full font-sans font-bold tracking-[0.15em] rounded-lg border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300 animate-in fade-in duration-200"
-                          onClick={() => {
-                            const text = ticketText;
-                            setTicketText("");
-                            streamTicket(text);
-                          }}
-                        >
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                          RETRY ANALYSIS
-                        </Button>
+                        <div className="space-y-2 animate-in fade-in duration-200">
+                          <Button
+                            data-testid="button-retry"
+                            type="button"
+                            variant="outline"
+                            className="w-full font-sans font-bold tracking-[0.15em] rounded-lg border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300"
+                            onClick={() => {
+                              const text = ticketText;
+                              setTicketText("");
+                              streamTicket(text);
+                            }}
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            RETRY ANALYSIS
+                          </Button>
+                          <p className="text-[10px] font-mono text-muted-foreground text-center tracking-wide">
+                            Edit the text above first, or click RETRY to resubmit as-is.
+                          </p>
+                        </div>
                       )}
                     </div>
                   )}
