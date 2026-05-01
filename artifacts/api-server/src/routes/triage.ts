@@ -76,9 +76,7 @@ router.post("/triage/stream", async (req, res): Promise<void> => {
   send({ type: "meta", domain, domainConfidence: confidence, escalated, escalationReason, escalationCategories, retrievedDocs });
 
   let clientAborted = false;
-  const onClientClose = () => { clientAborted = true; };
-  req.on("close", onClientClose);
-  res.on("close", onClientClose);
+  res.on("close", () => { clientAborted = true; });
 
   let fullResponse = "";
 
@@ -95,27 +93,27 @@ router.post("/triage/stream", async (req, res): Promise<void> => {
     const systemPrompt = `You are a helpful support agent for ${domainLabel}. Use the provided documentation context to answer the customer's question accurately and concisely. If you cannot confidently answer from the context, say so and suggest they contact support. Keep responses under 200 words. Be professional and empathetic.`;
     const userMessage = `Customer question: ${ticketText}\n\nDocumentation context:\n${context}\n\nPlease provide a helpful response to the customer.`;
 
-    const stream = anthropic.messages.stream({
+    const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 512,
+      max_tokens: 8192,
       system: systemPrompt,
       messages: [{ role: "user", content: userMessage }],
     });
 
-    for await (const event of stream) {
-      if (clientAborted) {
-        stream.abort();
-        break;
-      }
-      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-        fullResponse += event.delta.text;
-        send({ type: "chunk", text: event.delta.text });
-      }
+    const block = message.content[0];
+    fullResponse = block.type === "text" ? block.text : "";
+
+    const tokens = fullResponse.match(/\S+\s*/g) ?? [];
+    for (const token of tokens) {
+      if (clientAborted) break;
+      send({ type: "chunk", text: token });
+      await new Promise<void>((resolve) => setTimeout(resolve, 18));
     }
   }
 
   if (clientAborted) {
     req.log.info({ domain }, "Client aborted stream — ticket not saved");
+    res.end();
     return;
   }
 
