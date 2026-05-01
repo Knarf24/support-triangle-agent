@@ -5,20 +5,37 @@ import type { RetrievedDoc } from "@workspace/db";
 
 const DOMAIN_KEYWORDS: Record<string, string[]> = {
   hackerrank: [
-    "hackerrank", "coding challenge", "test case", "submission", "wrong answer",
+    "hackerrank", "hacker rank", "hackerank",
+    "coding challenge", "coding test", "code test", "coding exam",
+    "test case", "submission", "wrong answer",
     "time limit", "tle", "contest", "leaderboard", "assessment", "certificate",
     "hiring", "code editor", "compile", "algorithm", "data structure",
     "programming test", "hackathon", "rank", "score", "problem set",
     "online judge", "competitive programming", "interview", "recruiter",
-    "plagiarism", "disqualified", "language", "runtime error", "segfault",
+    "plagiarism", "disqualified", "runtime error", "segfault",
+    "take home", "proctored", "test expired", "exam expired",
+    "test link", "invitation link", "test invite",
   ],
   claude: [
-    "claude", "anthropic", "ai assistant", "chatbot", "language model", "llm",
+    // name variants & common misspellings
+    "claude", "claud", "claude's", "claudeai", "claude.ai", "claude ai",
+    "anthropic",
+    // product features
+    "ai assistant", "chatbot", "language model", "llm",
     "context window", "api key", "api error", "rate limit", "tokens",
-    "hallucination", "prompt", "conversation", "ai response", "model",
-    "claude.ai", "pro plan", "anthropic api", "claude 3", "opus", "sonnet",
-    "haiku", "streaming", "memory", "system prompt", "max tokens",
-    "overloaded", "subscription", "ai chat", "generated content",
+    "hallucination", "prompt", "system prompt", "conversation", "ai response",
+    "max tokens", "streaming", "memory", "generated content",
+    // plans / billing — split into individual terms so partial phrases match
+    "free plan", "pro plan", "paid plan", "premium plan", "team plan",
+    "plan difference", "plan comparison", "which plan", "upgrade plan",
+    "downgrade plan", "free tier", "free version", "free vs", "vs paid",
+    "subscription", "monthly plan", "annual plan",
+    // models
+    "opus", "sonnet", "haiku", "claude 3", "claude 4",
+    // api
+    "anthropic api", "ai chat", "overloaded", "model",
+    // usage limits
+    "message limit", "daily limit", "usage limit", "conversation limit",
   ],
   visa: [
     "visa", "credit card", "debit card", "card", "payment", "transaction",
@@ -28,6 +45,8 @@ const DOMAIN_KEYWORDS: Record<string, string[]> = {
     "merchant", "refund", "unauthorized", "lost card", "stolen card",
     "zero liability", "bank", "billing", "interest", "credit limit",
     "prepaid", "autopay", "late fee", "cash advance",
+    "card blocked", "card cancelled", "card replacement", "new card",
+    "card not working", "card declined", "payment declined",
   ],
 };
 
