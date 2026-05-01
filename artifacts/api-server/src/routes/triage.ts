@@ -75,6 +75,11 @@ router.post("/triage/stream", async (req, res): Promise<void> => {
 
   send({ type: "meta", domain, domainConfidence: confidence, escalated, escalationReason, escalationCategories, retrievedDocs });
 
+  let clientAborted = false;
+  const onClientClose = () => { clientAborted = true; };
+  req.on("close", onClientClose);
+  res.on("close", onClientClose);
+
   let fullResponse = "";
 
   if (escalated) {
@@ -98,11 +103,20 @@ router.post("/triage/stream", async (req, res): Promise<void> => {
     });
 
     for await (const event of stream) {
+      if (clientAborted) {
+        stream.abort();
+        break;
+      }
       if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
         fullResponse += event.delta.text;
         send({ type: "chunk", text: event.delta.text });
       }
     }
+  }
+
+  if (clientAborted) {
+    req.log.info({ domain }, "Client aborted stream — ticket not saved");
+    return;
   }
 
   const [ticket] = await db

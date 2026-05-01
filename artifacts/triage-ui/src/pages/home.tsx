@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListTickets, getListTicketsQueryKey, getGetTriageStatsQueryKey } from "@workspace/api-client-react";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DomainBadge } from "@/components/domain-badge";
-import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -32,11 +32,19 @@ export default function Home() {
   const [ticketText, setTicketText] = useState("");
   const [streaming, setStreaming] = useState<StreamingState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: history, isLoading: isHistoryLoading } = useListTickets();
 
+  const handleStop = useCallback(() => {
+    abortControllerRef.current?.abort();
+  }, []);
+
   const streamTicket = useCallback(async (text: string) => {
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsSubmitting(true);
     setStreaming({
       ticketText: text,
@@ -50,11 +58,14 @@ export default function Home() {
       isStreaming: true,
     });
 
+    let aborted = false;
+
     try {
       const response = await fetch("/api/triage/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ticketText: text }),
+        signal: controller.signal,
       });
 
       if (!response.ok || !response.body) {
@@ -101,12 +112,21 @@ export default function Home() {
           }
         }
       }
-    } catch (err) {
-      console.error("[triage/stream] Stream error:", err);
-      toast({ title: "Error", description: "Failed to process the ticket. Please try again.", variant: "destructive" });
-      setStreaming(null);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        aborted = true;
+        setStreaming((prev) => prev && ({ ...prev, isStreaming: false }));
+      } else {
+        console.error("[triage/stream] Stream error:", err);
+        toast({ title: "Error", description: "Failed to process the ticket. Please try again.", variant: "destructive" });
+        setStreaming(null);
+      }
     } finally {
+      abortControllerRef.current = null;
       setIsSubmitting(false);
+      if (aborted) {
+        toast({ title: "Stopped", description: "Response stopped. Partial result is shown but not saved.", variant: "default" });
+      }
     }
   }, [queryClient, toast]);
 
@@ -158,14 +178,27 @@ export default function Home() {
                     onChange={(e) => setTicketText(e.target.value)}
                     disabled={isSubmitting}
                   />
-                  <Button
-                    data-testid="button-submit"
-                    type="submit"
-                    className="w-full font-bold tracking-wide rounded-none"
-                    disabled={!ticketText.trim() || isSubmitting}
-                  >
-                    {isSubmitting ? "PROCESSING..." : "EXECUTE TRIAGE"}
-                  </Button>
+                  {isSubmitting ? (
+                    <Button
+                      data-testid="button-stop"
+                      type="button"
+                      variant="destructive"
+                      className="w-full font-bold tracking-wide rounded-none flex items-center gap-2"
+                      onClick={handleStop}
+                    >
+                      <Square className="w-4 h-4 fill-current" />
+                      STOP
+                    </Button>
+                  ) : (
+                    <Button
+                      data-testid="button-submit"
+                      type="submit"
+                      className="w-full font-bold tracking-wide rounded-none"
+                      disabled={!ticketText.trim()}
+                    >
+                      EXECUTE TRIAGE
+                    </Button>
+                  )}
                 </form>
               </CardContent>
             </Card>
