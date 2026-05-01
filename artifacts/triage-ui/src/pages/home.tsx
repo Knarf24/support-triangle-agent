@@ -36,6 +36,7 @@ export default function Home() {
   const [streaming, setStreaming] = useState<StreamingState | null>(null);
   const [suppressHistory, setSuppressHistory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [textRestored, setTextRestored] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -122,6 +123,8 @@ export default function Home() {
         aborted = true;
         setStreaming((prev) => prev && ({ ...prev, isStreaming: false, stopped: true }));
         setTicketText(text);
+        setTextRestored(true);
+        setTimeout(() => setTextRestored(false), 2000);
       } else {
         console.error("[triage/stream] Stream error:", err);
         toast({ title: "Error", description: "Failed to process the ticket. Please try again.", variant: "destructive" });
@@ -131,7 +134,7 @@ export default function Home() {
       abortControllerRef.current = null;
       setIsSubmitting(false);
       if (aborted) {
-        toast({ title: "Stopped", description: "Response stopped. Partial result is shown but not saved.", variant: "default" });
+        toast({ title: "Stopped", description: "Response stopped — your original text has been restored.", variant: "default" });
       }
     }
   }, [queryClient, toast]);
@@ -176,20 +179,27 @@ export default function Home() {
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <Textarea
-                    data-testid="input-ticket"
-                    placeholder="User issue goes here..."
-                    className="min-h-[200px] font-mono text-sm resize-none rounded-none focus-visible:ring-primary border-border"
-                    value={ticketText}
-                    onChange={(e) => {
-                      setTicketText(e.target.value);
-                      if (streaming?.stopped) {
-                        setStreaming(null);
-                        setSuppressHistory(true);
-                      }
-                    }}
-                    disabled={isSubmitting}
-                  />
+                  <div className="relative">
+                    <Textarea
+                      data-testid="input-ticket"
+                      placeholder="User issue goes here..."
+                      className={`min-h-[200px] font-mono text-sm resize-none rounded-none focus-visible:ring-primary transition-colors duration-300 ${textRestored ? "border-emerald-500 ring-1 ring-emerald-500/50" : "border-border"}`}
+                      value={ticketText}
+                      onChange={(e) => {
+                        setTicketText(e.target.value);
+                        if (streaming?.stopped) {
+                          setStreaming(null);
+                          setSuppressHistory(true);
+                        }
+                      }}
+                      disabled={isSubmitting}
+                    />
+                    {textRestored && (
+                      <span className="absolute top-2 right-2 text-xs font-mono font-bold text-emerald-500 bg-card px-1.5 py-0.5 border border-emerald-500/40 animate-in fade-in duration-200">
+                        RESTORED
+                      </span>
+                    )}
+                  </div>
                   {isSubmitting ? (
                     <Button
                       data-testid="button-stop"
