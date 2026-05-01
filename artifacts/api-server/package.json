@@ -8,8 +8,7 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "migrate:kb-urls": "node ./build-migration.mjs && node --enable-source-maps ./dist/migrate-kb-urls.mjs",
-    "test": "vitest run"
+    "migrate:kb-urls": "node ./build-migration.mjs && node --enable-source-maps ./dist/migrate-kb-urls.mjs"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
@@ -30,7 +29,6 @@
     "esbuild": "^0.27.3",
     "esbuild-plugin-pino": "^2.3.3",
     "pino-pretty": "^13",
-    "thread-stream": "3.1.0",
-    "vitest": "^4.1.5"
+    "thread-stream": "3.1.0"
   }
 }

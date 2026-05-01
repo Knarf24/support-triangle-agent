@@ -9,12 +9,26 @@ import {
   GetTicketResponse,
   GetTriageStatsResponse,
 } from "@workspace/api-zod";
-import { triageTicket, classifyDomain, evaluateRisk, retrieveDocs } from "../lib/triage";
+import { triageTicket, classifyDomain, evaluateRisk, retrieveDocs, extractDocTitle } from "../lib/triage";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import type { RetrievedDoc } from "@workspace/db";
-import { normalizeRetrievedDocs } from "../lib/normalize-docs";
 
 const router: IRouter = Router();
+
+function normalizeRetrievedDocs(docs: unknown): RetrievedDoc[] {
+  if (!Array.isArray(docs)) return [];
+  return docs.map((d) => {
+    if (d === null || typeof d !== "object") {
+      console.warn("[normalizeRetrievedDocs] Unexpected non-object entry in retrieved_docs:", d);
+      throw new Error(`Retrieved doc entry must be an object, got: ${typeof d}`);
+    }
+    const obj = d as Record<string, unknown>;
+    const content = typeof obj.content === "string" ? obj.content : "";
+    const title = typeof obj.title === "string" && obj.title ? obj.title : extractDocTitle(content);
+    const url = typeof obj.url === "string" ? obj.url : undefined;
+    return url ? { title, content, url } : { title, content };
+  });
+}
 
 router.post("/triage", async (req, res): Promise<void> => {
   const parsed = TriageTicketBody.safeParse(req.body);
@@ -147,17 +161,11 @@ router.get("/tickets", async (req, res): Promise<void> => {
     .orderBy(desc(ticketsTable.createdAt))
     .limit(50);
 
-  let normalized: Array<Omit<(typeof tickets)[number], "retrievedDocs" | "createdAt"> & { retrievedDocs: RetrievedDoc[]; createdAt: string }>;
-  try {
-    normalized = tickets.map((t) => ({ ...t, retrievedDocs: normalizeRetrievedDocs(t.retrievedDocs), createdAt: t.createdAt.toISOString() }));
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown parse error";
-    req.log.error({ err }, "Failed to parse retrieved_docs for ticket list");
-    res.status(422).json({ error: "One or more tickets contain malformed data and could not be parsed.", detail: message });
-    return;
-  }
-
-  res.json(ListTicketsResponse.parse(normalized));
+  res.json(
+    ListTicketsResponse.parse(
+      tickets.map((t) => ({ ...t, retrievedDocs: normalizeRetrievedDocs(t.retrievedDocs), createdAt: t.createdAt.toISOString() })),
+    ),
+  );
 });
 
 router.get("/tickets/:id", async (req, res): Promise<void> => {
@@ -177,17 +185,7 @@ router.get("/tickets/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  let retrievedDocs: ReturnType<typeof normalizeRetrievedDocs>;
-  try {
-    retrievedDocs = normalizeRetrievedDocs(ticket.retrievedDocs);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown parse error";
-    req.log.error({ err, ticketId: ticket.id }, "Failed to parse retrieved_docs for ticket");
-    res.status(422).json({ error: "This ticket contains malformed data and could not be parsed.", detail: message });
-    return;
-  }
-
-  res.json(GetTicketResponse.parse({ ...ticket, retrievedDocs, createdAt: ticket.createdAt.toISOString() }));
+  res.json(GetTicketResponse.parse({ ...ticket, retrievedDocs: normalizeRetrievedDocs(ticket.retrievedDocs), createdAt: ticket.createdAt.toISOString() }));
 });
 
 router.get("/triage/stats", async (req, res): Promise<void> => {
@@ -227,13 +225,7 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
   const sourcesByDomain: Record<string, number> = { hackerrank: 0, claude: 0, visa: 0, unknown: 0 };
 
   for (const row of sourceRows) {
-    let docs: ReturnType<typeof normalizeRetrievedDocs>;
-    try {
-      docs = normalizeRetrievedDocs(row.retrievedDocs);
-    } catch (err) {
-      req.log.warn({ err }, "Skipping malformed retrieved_docs row in stats calculation");
-      docs = [];
-    }
+    const docs = normalizeRetrievedDocs(row.retrievedDocs);
     totalSources += docs.length;
     const domain = row.domain as string;
     const domainKey = domain in sourcesByDomain ? domain : "unknown";

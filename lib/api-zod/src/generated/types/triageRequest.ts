@@ -8,5 +8,4 @@
 
 export interface TriageRequest {
   ticketText: string;
-  inputMethod?: string;
 }

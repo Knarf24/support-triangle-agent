@@ -8,12 +8,8 @@
 
 export * from "./errorResponse";
 export * from "./healthStatus";
-export * from "./parseErrorResponse";
 export * from "./retrievedDoc";
-export * from "./startupStatusResponse";
 export * from "./ticketResult";
 export * from "./triageRequest";
 export * from "./triageStats";
 export * from "./triageStatsByDomain";
-export * from "./triageStatsSourcesByDomain";
-export * from "./triageStatsSourcesOverTimeItem";

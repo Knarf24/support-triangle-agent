@@ -33,16 +33,6 @@ React + Vite frontend for the triage agent. Accessible at preview path `/`.
 - Calls the Express API (`artifacts/api-server/`) for all data
 - Built with Tailwind, shadcn/ui, Recharts, React Query
 
-## KB Sources Config (`artifacts/api-server/kb-sources.json`)
-
-Domain-to-URL mappings for the KB URL migration logic. Add a new entry here to support a new knowledge-base domain without touching any TypeScript source files:
-
-```json
-{ "domain": "newproduct", "url": "https://support.newproduct.com" }
-```
-
-The server reads this file at startup via `loadKbSources()` in `src/lib/kb-url-migration.ts`.
-
 ## API Server (`artifacts/api-server/`)
 
 Express 5 backend serving:

@@ -19,8 +19,6 @@ import type {
 import type {
   ErrorResponse,
   HealthStatus,
-  ParseErrorResponse,
-  StartupStatusResponse,
   TicketResult,
   TriageRequest,
   TriageStats,
@@ -102,81 +100,6 @@ export function useHealthCheck<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getHealthCheckQueryOptions(options);
-
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
-
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-/**
- * @summary Get startup migration status
- */
-export const getGetStartupStatusUrl = () => {
-  return `/api/startup-status`;
-};
-
-export const getStartupStatus = async (
-  options?: RequestInit,
-): Promise<StartupStatusResponse> => {
-  return customFetch<StartupStatusResponse>(getGetStartupStatusUrl(), {
-    ...options,
-    method: "GET",
-  });
-};
-
-export const getGetStartupStatusQueryKey = () => {
-  return [`/api/startup-status`] as const;
-};
-
-export const getGetStartupStatusQueryOptions = <
-  TData = Awaited<ReturnType<typeof getStartupStatus>>,
-  TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getStartupStatus>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getGetStartupStatusQueryKey();
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getStartupStatus>>
-  > = ({ signal }) => getStartupStatus({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getStartupStatus>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
-};
-
-export type GetStartupStatusQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getStartupStatus>>
->;
-export type GetStartupStatusQueryError = ErrorType<unknown>;
-
-/**
- * @summary Get startup migration status
- */
-
-export function useGetStartupStatus<
-  TData = Awaited<ReturnType<typeof getStartupStatus>>,
-  TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getStartupStatus>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetStartupStatusQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -293,7 +216,7 @@ export const getListTicketsQueryKey = () => {
 
 export const getListTicketsQueryOptions = <
   TData = Awaited<ReturnType<typeof listTickets>>,
-  TError = ErrorType<ParseErrorResponse>,
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof listTickets>>,
@@ -320,7 +243,7 @@ export const getListTicketsQueryOptions = <
 export type ListTicketsQueryResult = NonNullable<
   Awaited<ReturnType<typeof listTickets>>
 >;
-export type ListTicketsQueryError = ErrorType<ParseErrorResponse>;
+export type ListTicketsQueryError = ErrorType<unknown>;
 
 /**
  * @summary List all processed tickets
@@ -328,7 +251,7 @@ export type ListTicketsQueryError = ErrorType<ParseErrorResponse>;
 
 export function useListTickets<
   TData = Awaited<ReturnType<typeof listTickets>>,
-  TError = ErrorType<ParseErrorResponse>,
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof listTickets>>,
@@ -369,7 +292,7 @@ export const getGetTicketQueryKey = (id: number) => {
 
 export const getGetTicketQueryOptions = <
   TData = Awaited<ReturnType<typeof getTicket>>,
-  TError = ErrorType<ErrorResponse | ParseErrorResponse>,
+  TError = ErrorType<ErrorResponse>,
 >(
   id: number,
   options?: {
@@ -402,7 +325,7 @@ export const getGetTicketQueryOptions = <
 export type GetTicketQueryResult = NonNullable<
   Awaited<ReturnType<typeof getTicket>>
 >;
-export type GetTicketQueryError = ErrorType<ErrorResponse | ParseErrorResponse>;
+export type GetTicketQueryError = ErrorType<ErrorResponse>;
 
 /**
  * @summary Get a single ticket by ID
@@ -410,7 +333,7 @@ export type GetTicketQueryError = ErrorType<ErrorResponse | ParseErrorResponse>;
 
 export function useGetTicket<
   TData = Awaited<ReturnType<typeof getTicket>>,
-  TError = ErrorType<ErrorResponse | ParseErrorResponse>,
+  TError = ErrorType<ErrorResponse>,
 >(
   id: number,
   options?: {

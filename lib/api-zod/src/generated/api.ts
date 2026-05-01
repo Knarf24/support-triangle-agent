@@ -15,13 +15,6 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
- * @summary Get startup migration status
- */
-export const GetStartupStatusResponse = zod.object({
-  migrationFailed: zod.boolean(),
-});
-
-/**
  * @summary Submit a support ticket for triage
  */
 export const TriageTicketBody = zod.object({

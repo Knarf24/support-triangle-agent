@@ -28,7 +28,7 @@ function escapeCsv(value: unknown): string {
 }
 
 export default function History() {
-  const { data: tickets, isLoading, error } = useListTickets();
+  const { data: tickets, isLoading } = useListTickets();
   const [searchTerm, setSearchTerm] = useState("");
   const [domainFilter, setDomainFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -41,36 +41,20 @@ export default function History() {
     const headers = [
       "id", "timestamp", "domain", "confidence_pct",
       "escalated", "escalation_reason", "escalation_categories",
-      "sources_count", "kb_sections", "ticket_text", "response"
+      "sources_count", "ticket_text", "response"
     ];
-    const rows = [...tickets].reverse().map((t) => {
-      const docs = Array.isArray(t.retrievedDocs) ? t.retrievedDocs : [];
-      const sections = [
-        ...new Set(
-          docs
-            .map((d: { section?: string; title?: string }) => {
-              const sec = d.section ?? "";
-              const title = d.title ?? "";
-              if (sec && title) return `${sec}:${title}`;
-              return sec || title;
-            })
-            .filter(Boolean)
-        ),
-      ].join(";");
-      return [
-        t.id,
-        format(new Date(t.createdAt), "yyyy-MM-dd HH:mm:ss"),
-        t.domain,
-        Math.round((t.domainConfidence ?? 0) * 100),
-        t.escalated ? "true" : "false",
-        t.escalationReason ?? "",
-        Array.isArray(t.escalationCategories) ? t.escalationCategories.join(";") : "",
-        docs.length,
-        sections,
-        t.ticketText,
-        t.response ?? "",
-      ].map(escapeCsv).join(",");
-    });
+    const rows = [...tickets].reverse().map((t) => [
+      t.id,
+      format(new Date(t.createdAt), "yyyy-MM-dd HH:mm:ss"),
+      t.domain,
+      Math.round((t.domainConfidence ?? 0) * 100),
+      t.escalated ? "true" : "false",
+      t.escalationReason ?? "",
+      Array.isArray(t.escalationCategories) ? t.escalationCategories.join(";") : "",
+      Array.isArray(t.retrievedDocs) ? t.retrievedDocs.length : 0,
+      t.ticketText,
+      t.response ?? "",
+    ].map(escapeCsv).join(","));
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -82,14 +66,7 @@ export default function History() {
   }, [tickets]);
 
   const filteredTickets = tickets?.filter(ticket => {
-    const term = searchTerm.toLowerCase();
-    const docs = Array.isArray(ticket.retrievedDocs) ? ticket.retrievedDocs : [];
-    const matchesSearch = !term ||
-      ticket.ticketText.toLowerCase().includes(term) ||
-      docs.some((d: { section?: string; title?: string }) =>
-        (d.section ?? "").toLowerCase().includes(term) ||
-        (d.title ?? "").toLowerCase().includes(term)
-      );
+    const matchesSearch = ticket.ticketText.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDomain = domainFilter === "all" || ticket.domain === domainFilter;
     const matchesStatus = statusFilter === "all" || 
       (statusFilter === "escalated" ? ticket.escalated : !ticket.escalated);
@@ -133,7 +110,7 @@ export default function History() {
           <div className="relative flex-1 w-full group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
             <Input 
-              placeholder="Search tickets or KB sections / titles..." 
+              placeholder="Search ticket content..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 rounded-lg border-white/10 bg-black/40 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all duration-300 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus-visible:shadow-[0_0_15px_rgba(0,212,255,0.2),inset_0_0_10px_rgba(0,0,0,0.5)] font-mono text-sm h-10"
@@ -203,21 +180,7 @@ export default function History() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {error ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-48 text-center bg-black/20">
-                    <div className="flex flex-col items-center gap-3 text-destructive">
-                      <AlertCircle className="w-8 h-8 opacity-70" />
-                      <div className="space-y-1">
-                        <p className="font-mono text-xs font-bold tracking-[0.15em]">FAILED TO LOAD TICKET DATA</p>
-                        <p className="font-sans text-xs text-muted-foreground max-w-sm">
-                          One or more tickets contain malformed data and could not be loaded. Please contact your administrator.
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : isLoading ? (
+              {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i} className="border-b border-white/5">
                     <TableCell><Skeleton className="h-4 w-4 bg-white/10" /></TableCell>

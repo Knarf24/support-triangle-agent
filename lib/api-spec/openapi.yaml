@@ -25,19 +25,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
-  /startup-status:
-    get:
-      operationId: getStartupStatus
-      tags: [health]
-      summary: Get startup migration status
-      responses:
-        "200":
-          description: Startup migration status
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StartupStatusResponse"
-
   /triage:
     post:
       operationId: triageTicket
@@ -77,12 +64,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TicketResult"
-        "422":
-          description: One or more tickets contain malformed data and could not be parsed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ParseErrorResponse"
 
   /tickets/{id}:
     get:
@@ -108,12 +89,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "422":
-          description: Ticket contains malformed data and could not be parsed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ParseErrorResponse"
 
   /triage/stats:
     get:
@@ -138,20 +113,10 @@ components:
       required:
         - status
 
-    StartupStatusResponse:
-      type: object
-      properties:
-        migrationFailed:
-          type: boolean
-      required:
-        - migrationFailed
-
     TriageRequest:
       type: object
       properties:
         ticketText:
-          type: string
-        inputMethod:
           type: string
       required:
         - ticketText
@@ -180,8 +145,6 @@ components:
           items:
             $ref: "#/components/schemas/RetrievedDoc"
         response:
-          type: string
-        inputMethod:
           type: string
         createdAt:
           type: string
@@ -238,22 +201,6 @@ components:
             required:
               - date
               - sources
-        sourcesByDomain:
-          type: object
-          properties:
-            hackerrank:
-              type: integer
-            claude:
-              type: integer
-            visa:
-              type: integer
-            unknown:
-              type: integer
-          required:
-            - hackerrank
-            - claude
-            - visa
-            - unknown
       required:
         - total
         - autoResponded
@@ -262,7 +209,6 @@ components:
         - totalSources
         - avgSourcesPerTicket
         - sourcesOverTime
-        - sourcesByDomain
 
     RetrievedDoc:
       type: object
@@ -284,17 +230,5 @@ components:
       properties:
         error:
           type: string
-      required:
-        - error
-
-    ParseErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Human-readable description of the parse failure
-        detail:
-          type: string
-          description: Technical detail from the underlying parse exception
       required:
         - error

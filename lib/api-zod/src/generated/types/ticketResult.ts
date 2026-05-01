@@ -17,6 +17,5 @@ export interface TicketResult {
   escalationCategories: string[];
   retrievedDocs: RetrievedDoc[];
   response: string;
-  inputMethod?: string;
   createdAt: string;
 }

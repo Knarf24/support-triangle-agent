@@ -6,8 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { TriageStatsByDomain } from "./triageStatsByDomain";
-import type { TriageStatsSourcesByDomain } from "./triageStatsSourcesByDomain";
-import type { TriageStatsSourcesOverTimeItem } from "./triageStatsSourcesOverTimeItem";
+
+export interface TriageStatsSourcesOverTimeItem {
+  date: string;
+  sources: number;
+}
 
 export interface TriageStats {
   total: number;
@@ -17,5 +20,4 @@ export interface TriageStats {
   totalSources: number;
   avgSourcesPerTicket: number;
   sourcesOverTime: TriageStatsSourcesOverTimeItem[];
-  sourcesByDomain: TriageStatsSourcesByDomain;
 }

@@ -5,43 +5,13 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { logger } from "./logger";
 
-function loadKbSources(): { domainHelpUrl: Record<string, string>; knownDomains: string[] } {
-  const configPath = join(process.cwd(), "kb-sources.json");
-  try {
-    const raw = readFileSync(configPath, "utf-8");
-    const parsed = JSON.parse(raw) as { sources?: { domain: string; url: string }[] };
-    const sources = Array.isArray(parsed.sources) ? parsed.sources : [];
-    const domainHelpUrl: Record<string, string> = {};
-    const knownDomains: string[] = [];
-    for (const entry of sources) {
-      if (typeof entry.domain === "string" && typeof entry.url === "string") {
-        domainHelpUrl[entry.domain] = entry.url;
-        knownDomains.push(entry.domain);
-      } else {
-        logger.warn({ entry }, "kb-sources.json: skipping invalid entry (missing domain or url).");
-      }
-    }
-    if (knownDomains.length === 0) {
-      logger.error(
-        { configPath },
-        "kb-sources.json loaded but contains no valid sources — KB URL enrichment will be disabled. " +
-        "Add at least one { domain, url } entry to the file.",
-      );
-    } else {
-      logger.info({ configPath, domains: knownDomains }, `KB sources loaded: ${knownDomains.length} domain(s).`);
-    }
-    return { domainHelpUrl, knownDomains };
-  } catch (err) {
-    logger.error(
-      { configPath, err },
-      "Could not read or parse kb-sources.json — KB URL enrichment will be disabled. " +
-      "Ensure the file exists in the api-server package root and contains valid JSON.",
-    );
-    return { domainHelpUrl: {}, knownDomains: [] };
-  }
-}
+const DOMAIN_HELP_URL: Record<string, string> = {
+  hackerrank: "https://support.hackerrank.com",
+  claude: "https://support.anthropic.com",
+  visa: "https://usa.visa.com/support",
+};
 
-const { domainHelpUrl: DOMAIN_HELP_URL, knownDomains: KNOWN_DOMAINS } = loadKbSources();
+const KNOWN_DOMAINS = ["hackerrank", "claude", "visa"];
 
 function extractDocTitle(chunk: string): string {
   const match = chunk.match(/^Q:\s*(.+)/m);
