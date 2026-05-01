@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import re
+from typing import TypedDict
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -25,10 +26,33 @@ DOMAIN_FILE_MAP = {
     "visa": "visa.txt",
 }
 
+DOMAIN_HELP_URL = {
+    "hackerrank": "https://support.hackerrank.com",
+    "claude": "https://support.anthropic.com",
+    "visa": "https://usa.visa.com/support",
+}
+
 TOP_K = 3
 
 SEMANTIC_WEIGHT = 0.65
 TFIDF_WEIGHT = 0.35
+
+
+class RetrievedDoc(TypedDict, total=False):
+    title: str
+    content: str
+    url: str
+
+
+def _extract_title(chunk: str) -> str:
+    """Extract a human-readable title from a Q&A chunk."""
+    match = re.search(r"^Q:\s*(.+)", chunk, re.MULTILINE)
+    if match:
+        return match.group(1).strip()
+    section_match = re.search(r"===\s*(.+?)\s*===", chunk)
+    if section_match:
+        return section_match.group(1).strip()
+    return chunk[:60] + ("…" if len(chunk) > 60 else "")
 
 
 def _load_corpus(domain: str) -> list[str]:
@@ -47,6 +71,11 @@ def _load_corpus(domain: str) -> list[str]:
     chunks = re.split(r"\n(?=Q:)", content)
     chunks = [c.strip() for c in chunks if c.strip() and len(c.strip()) > 50]
     return chunks
+
+
+def _load_corpus_with_domain(domain: str) -> list[tuple[str, str]]:
+    """Load and split corpus file, returning (chunk, domain) pairs."""
+    return [(chunk, domain) for chunk in _load_corpus(domain)]
 
 
 def _tfidf_scores(ticket: str, chunks: list[str]) -> np.ndarray:
@@ -94,7 +123,7 @@ def retrieve(
     domain: str,
     top_k: int = TOP_K,
     verbose: bool = False,
-) -> list[str]:
+) -> list[RetrievedDoc]:
     """
     Retrieve the most relevant corpus chunks using hybrid semantic + TF-IDF.
 
@@ -105,19 +134,22 @@ def retrieve(
         verbose: If True, print retrieval method used.
 
     Returns:
-        List of relevant corpus text chunks, most relevant first.
+        List of RetrievedDoc dicts with title, content, and url, most relevant first.
     """
     if domain == "unknown":
-        all_chunks: list[str] = []
+        tagged: list[tuple[str, str]] = []
         for d in DOMAIN_FILE_MAP:
-            all_chunks.extend(_load_corpus(d))
+            tagged.extend(_load_corpus_with_domain(d))
         cache_key = "all"
     else:
-        all_chunks = _load_corpus(domain)
+        tagged = _load_corpus_with_domain(domain)
         cache_key = domain
 
-    if not all_chunks:
+    if not tagged:
         return []
+
+    all_chunks = [chunk for chunk, _ in tagged]
+    all_domains = [d for _, d in tagged]
 
     tfidf = _tfidf_scores(ticket, all_chunks)
     semantic = _semantic_scores(ticket, all_chunks, cache_key)
@@ -133,8 +165,22 @@ def retrieve(
         print(f"  Retrieval   : {method}")
 
     top_indices = np.argsort(hybrid)[::-1][:top_k]
-    results = [all_chunks[i] for i in top_indices if hybrid[i] > 0.0]
-    return results if results else all_chunks[:top_k]
+    valid = [i for i in top_indices if hybrid[i] > 0.0]
+    indices = valid if valid else list(range(min(top_k, len(all_chunks))))
+
+    results: list[RetrievedDoc] = []
+    for i in indices:
+        chunk = all_chunks[i]
+        chunk_domain = all_domains[i]
+        doc: RetrievedDoc = {
+            "title": _extract_title(chunk),
+            "content": chunk,
+        }
+        url = DOMAIN_HELP_URL.get(chunk_domain)
+        if url:
+            doc["url"] = url
+        results.append(doc)
+    return results
 
 
 def retrieve_with_scores(

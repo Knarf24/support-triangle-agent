@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, FileText, Maximize2, Minimize2 } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, FileText, Maximize2, Minimize2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import type { RetrievedDoc } from "@workspace/api-client-react";
 
 interface SourcesSectionProps {
-  docs: string[];
+  docs: RetrievedDoc[];
 }
 
 const TRUNCATE_LENGTH = 160;
 
-function SourceDoc({ doc, index }: { doc: string; index: number }) {
+function SourceDoc({ doc, index }: { doc: RetrievedDoc; index: number }) {
   const [expanded, setExpanded] = useState(false);
-  const isTruncatable = doc.length > TRUNCATE_LENGTH;
-  const displayText = expanded || !isTruncatable ? doc : doc.slice(0, TRUNCATE_LENGTH) + "…";
+  const isTruncatable = doc.content.length > TRUNCATE_LENGTH;
+  const displayText = expanded || !isTruncatable ? doc.content : doc.content.slice(0, TRUNCATE_LENGTH) + "…";
 
   return (
     <div className="border border-border bg-background p-3 space-y-2">
@@ -21,16 +22,33 @@ function SourceDoc({ doc, index }: { doc: string; index: number }) {
           <Badge variant="outline" className="rounded-none font-mono text-[10px] shrink-0 border-primary/30 text-primary">
             DOC {String(index + 1).padStart(2, "0")}
           </Badge>
+          <span className="text-[11px] font-mono text-foreground/80 truncate font-medium" title={doc.title}>
+            {doc.title}
+          </span>
         </div>
-        {isTruncatable && (
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={expanded ? "Collapse source" : "Expand source"}
-          >
-            {expanded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
-          </button>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {doc.url && (
+            <a
+              href={doc.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+              aria-label={`Open full article: ${doc.title}`}
+              title="Open KB article"
+            >
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+          {isTruncatable && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={expanded ? "Collapse source" : "Expand source"}
+            >
+              {expanded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+            </button>
+          )}
+        </div>
       </div>
       <p className="text-xs font-mono text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">
         {displayText}

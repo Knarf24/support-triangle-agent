@@ -143,7 +143,7 @@ components:
         retrievedDocs:
           type: array
           items:
-            type: string
+            $ref: "#/components/schemas/RetrievedDoc"
         response:
           type: string
         createdAt:
@@ -190,6 +190,19 @@ components:
         - autoResponded
         - escalated
         - byDomain
+
+    RetrievedDoc:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        url:
+          type: string
+      required:
+        - title
+        - content
 
     ErrorResponse:
       type: object

@@ -13,6 +13,12 @@ export interface TriageRequest {
   ticketText: string;
 }
 
+export interface RetrievedDoc {
+  title: string;
+  content: string;
+  url?: string;
+}
+
 export interface TicketResult {
   id: number;
   ticketText: string;
@@ -21,7 +27,7 @@ export interface TicketResult {
   escalated: boolean;
   escalationReason: string;
   escalationCategories: string[];
-  retrievedDocs: string[];
+  retrievedDocs: RetrievedDoc[];
   response: string;
   createdAt: string;
 }

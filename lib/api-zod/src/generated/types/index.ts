@@ -8,6 +8,7 @@
 
 export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./retrievedDoc";
 export * from "./ticketResult";
 export * from "./triageRequest";
 export * from "./triageStats";

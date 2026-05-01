@@ -189,7 +189,7 @@ export default function History() {
                               ) : null}
 
                               {hasDocs && (
-                                <SourcesSection docs={ticket.retrievedDocs as string[]} />
+                                <SourcesSection docs={ticket.retrievedDocs} />
                               )}
 
                               {!hasDocs && (

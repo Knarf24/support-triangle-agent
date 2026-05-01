@@ -1,6 +1,7 @@
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { RetrievedDoc } from "@workspace/db";
 
 const DOMAIN_KEYWORDS: Record<string, string[]> = {
   hackerrank: [
@@ -68,6 +69,20 @@ const ESCALATION_PATTERNS: Record<string, string[]> = {
     "hate speech", "violent", "emergency", "urgent safety",
   ],
 };
+
+const DOMAIN_HELP_URL: Record<string, string> = {
+  hackerrank: "https://support.hackerrank.com",
+  claude: "https://support.anthropic.com",
+  visa: "https://usa.visa.com/support",
+};
+
+export function extractDocTitle(chunk: string): string {
+  const match = chunk.match(/^Q:\s*(.+)/m);
+  if (match) return match[1].trim();
+  const sectionMatch = chunk.match(/===\s*(.+?)\s*===/);
+  if (sectionMatch) return sectionMatch[1].trim();
+  return chunk.slice(0, 60) + (chunk.length > 60 ? "…" : "");
+}
 
 let corpusCache: Record<string, string[]> | null = null;
 
@@ -155,13 +170,13 @@ export function evaluateRisk(ticket: string): {
   return { escalated: false, escalationReason: "Safe to auto-respond", escalationCategories: [] };
 }
 
-export function retrieveDocs(ticket: string, domain: string): string[] {
+export function retrieveDocs(ticket: string, domain: string): RetrievedDoc[] {
   const corpus = loadCorpus();
   const lower = ticket.toLowerCase();
   const ticketWords = lower.split(/\s+/).filter((w) => w.length > 3);
 
   const domainsToSearch = domain === "unknown" ? ["hackerrank", "claude", "visa"] : [domain];
-  const scored: Array<{ chunk: string; score: number }> = [];
+  const scored: Array<{ chunk: string; score: number; domain: string }> = [];
 
   for (const d of domainsToSearch) {
     const chunks = corpus[d] || [];
@@ -171,18 +186,22 @@ export function retrieveDocs(ticket: string, domain: string): string[] {
       for (const word of ticketWords) {
         if (chunkLower.includes(word)) score += 1;
       }
-      if (score > 0) scored.push({ chunk, score });
+      if (score > 0) scored.push({ chunk, score, domain: d });
     }
   }
 
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, 3).map((s) => s.chunk);
+  return scored.slice(0, 3).map((s) => ({
+    title: extractDocTitle(s.chunk),
+    content: s.chunk,
+    url: DOMAIN_HELP_URL[s.domain],
+  }));
 }
 
 export async function generateResponse(
   ticket: string,
   domain: string,
-  retrievedDocs: string[],
+  retrievedDocs: RetrievedDoc[],
   escalated: boolean,
   escalationReason: string,
 ): Promise<string> {
@@ -190,7 +209,7 @@ export async function generateResponse(
     return `Thank you for reaching out to our support team. Your ticket has been flagged for priority review by a human specialist (${escalationReason.toLowerCase()}). A member of our team will contact you within 2-4 business hours. Please do not reply to automated messages — wait for a specialist to follow up directly.`;
   }
 
-  const context = retrievedDocs.length > 0 ? retrievedDocs.join("\n\n---\n\n") : "No specific documentation matched.";
+  const context = retrievedDocs.length > 0 ? retrievedDocs.map((d) => d.content).join("\n\n---\n\n") : "No specific documentation matched.";
 
   const systemPrompt = `You are a helpful support agent for ${domain === "unknown" ? "a technology company" : domain === "hackerrank" ? "HackerRank" : domain === "claude" ? "Claude (Anthropic)" : "Visa"}. 
 Use the provided documentation context to answer the customer's question accurately and concisely. 
@@ -222,7 +241,7 @@ export async function triageTicket(ticketText: string): Promise<{
   escalated: boolean;
   escalationReason: string;
   escalationCategories: string[];
-  retrievedDocs: string[];
+  retrievedDocs: RetrievedDoc[];
   response: string;
 }> {
   const { domain, confidence } = classifyDomain(ticketText);

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { SourcesSection } from "@/components/sources-section";
+import type { RetrievedDoc } from "@workspace/api-client-react";
 
 type StreamingMeta = {
   domain: string;
@@ -19,7 +20,7 @@ type StreamingMeta = {
   escalated: boolean;
   escalationReason: string;
   escalationCategories: string[];
-  retrievedDocs: string[];
+  retrievedDocs: RetrievedDoc[];
 };
 
 type StreamingState = StreamingMeta & {

@@ -9,10 +9,28 @@ import {
   GetTicketResponse,
   GetTriageStatsResponse,
 } from "@workspace/api-zod";
-import { triageTicket, classifyDomain, evaluateRisk, retrieveDocs } from "../lib/triage";
+import { triageTicket, classifyDomain, evaluateRisk, retrieveDocs, extractDocTitle } from "../lib/triage";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
+import type { RetrievedDoc } from "@workspace/db";
 
 const router: IRouter = Router();
+
+function normalizeRetrievedDocs(docs: unknown): RetrievedDoc[] {
+  if (!Array.isArray(docs)) return [];
+  return docs.map((d) => {
+    if (typeof d === "string") {
+      return { title: extractDocTitle(d), content: d };
+    }
+    if (d !== null && typeof d === "object") {
+      const obj = d as Record<string, unknown>;
+      const content = typeof obj.content === "string" ? obj.content : "";
+      const title = typeof obj.title === "string" && obj.title ? obj.title : extractDocTitle(content);
+      const url = typeof obj.url === "string" ? obj.url : undefined;
+      return url ? { title, content, url } : { title, content };
+    }
+    return { title: "", content: String(d) };
+  });
+}
 
 router.post("/triage", async (req, res): Promise<void> => {
   const parsed = TriageTicketBody.safeParse(req.body);
@@ -83,7 +101,7 @@ router.post("/triage/stream", async (req, res): Promise<void> => {
   if (escalated) {
     fullResponse = `Thank you for reaching out to our support team. Your ticket has been flagged for priority review by a human specialist (${escalationReason.toLowerCase()}). A member of our team will contact you within 2-4 business hours. Please do not reply to automated messages — wait for a specialist to follow up directly.`;
   } else {
-    const context = retrievedDocs.length > 0 ? retrievedDocs.join("\n\n---\n\n") : "No specific documentation matched.";
+    const context = retrievedDocs.length > 0 ? retrievedDocs.map((d) => d.content).join("\n\n---\n\n") : "No specific documentation matched.";
     const domainLabel =
       domain === "hackerrank" ? "HackerRank"
       : domain === "claude" ? "Claude (Anthropic)"
@@ -146,7 +164,7 @@ router.get("/tickets", async (req, res): Promise<void> => {
 
   res.json(
     ListTicketsResponse.parse(
-      tickets.map((t) => ({ ...t, createdAt: t.createdAt.toISOString() })),
+      tickets.map((t) => ({ ...t, retrievedDocs: normalizeRetrievedDocs(t.retrievedDocs), createdAt: t.createdAt.toISOString() })),
     ),
   );
 });
@@ -168,7 +186,7 @@ router.get("/tickets/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetTicketResponse.parse({ ...ticket, createdAt: ticket.createdAt.toISOString() }));
+  res.json(GetTicketResponse.parse({ ...ticket, retrievedDocs: normalizeRetrievedDocs(ticket.retrievedDocs), createdAt: ticket.createdAt.toISOString() }));
 });
 
 router.get("/triage/stats", async (req, res): Promise<void> => {

@@ -5,6 +5,7 @@
  * Support Triage Agent API
  * OpenAPI spec version: 0.1.0
  */
+import type { RetrievedDoc } from "./retrievedDoc";
 
 export interface TicketResult {
   id: number;
@@ -14,7 +15,7 @@ export interface TicketResult {
   escalated: boolean;
   escalationReason: string;
   escalationCategories: string[];
-  retrievedDocs: string[];
+  retrievedDocs: RetrievedDoc[];
   response: string;
   createdAt: string;
 }
