@@ -2,7 +2,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useGetTriageStats, useListTickets } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 import { Activity, ShieldAlert, CheckCircle2, TrendingUp, Layers, BookOpen, BarChart2, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
@@ -119,6 +119,60 @@ export default function Stats() {
             isFloat
           />
         </div>
+
+        <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+          <CardHeader className="border-b border-white/5 bg-black/20 pb-4">
+            <CardTitle className="text-xs font-mono font-bold text-primary tracking-[0.2em] flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              KB SOURCES CONSULTED OVER TIME
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 h-[260px]">
+            {isLoading ? (
+              <Skeleton className="w-full h-full bg-white/5" />
+            ) : !stats?.sourcesOverTime?.length ? (
+              <div className="flex items-center justify-center h-full text-xs font-mono text-muted-foreground tracking-[0.15em]">NO DATA YET</div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={stats.sourcesOverTime} margin={{ top: 10, right: 16, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    fontFamily="var(--font-mono)"
+                    tickFormatter={(v: string) => {
+                      const d = new Date(v + "T00:00:00");
+                      return `${d.getMonth() + 1}/${d.getDate()}`;
+                    }}
+                  />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} fontFamily="var(--font-mono)" allowDecimals={false} />
+                  <Tooltip
+                    cursor={{ stroke: 'rgba(0,212,255,0.2)', strokeWidth: 1 }}
+                    contentStyle={{ backgroundColor: 'rgba(10,15,30,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
+                    itemStyle={{ color: 'hsl(var(--foreground))', fontFamily: 'var(--font-mono)', fontSize: '12px' }}
+                    labelStyle={{ color: 'hsl(var(--muted-foreground))', fontWeight: 'bold', fontFamily: 'var(--font-mono)', fontSize: '10px' }}
+                    labelFormatter={(label: string) => {
+                      const d = new Date(label + "T00:00:00");
+                      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                    }}
+                    formatter={(value: number) => [value, 'Sources']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="sources"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
+                    activeDot={{ r: 6, fill: 'hsl(var(--primary))', stroke: 'rgba(0,212,255,0.3)', strokeWidth: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">

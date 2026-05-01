@@ -111,4 +111,10 @@ export const GetTriageStatsResponse = zod.object({
   }),
   totalSources: zod.number(),
   avgSourcesPerTicket: zod.number(),
+  sourcesOverTime: zod.array(
+    zod.object({
+      date: zod.string(),
+      sources: zod.number(),
+    }),
+  ),
 });

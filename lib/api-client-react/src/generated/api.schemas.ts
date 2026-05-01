@@ -41,6 +41,11 @@ export type TriageStatsByDomain = {
   unknown: number;
 };
 
+export interface TriageStatsSourcesOverTimeItem {
+  date: string;
+  sources: number;
+}
+
 export interface TriageStats {
   total: number;
   autoResponded: number;
@@ -48,6 +53,7 @@ export interface TriageStats {
   byDomain: TriageStatsByDomain;
   totalSources: number;
   avgSourcesPerTicket: number;
+  sourcesOverTime: TriageStatsSourcesOverTimeItem[];
 }
 
 export interface ErrorResponse {

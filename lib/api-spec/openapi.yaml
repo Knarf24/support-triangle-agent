@@ -189,6 +189,18 @@ components:
           type: integer
         avgSourcesPerTicket:
           type: number
+        sourcesOverTime:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              sources:
+                type: integer
+            required:
+              - date
+              - sources
       required:
         - total
         - autoResponded
@@ -196,6 +208,7 @@ components:
         - byDomain
         - totalSources
         - avgSourcesPerTicket
+        - sourcesOverTime
 
     RetrievedDoc:
       type: object

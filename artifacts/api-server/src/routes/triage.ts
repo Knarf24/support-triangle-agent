@@ -199,7 +199,7 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
       .from(ticketsTable)
       .groupBy(ticketsTable.domain, ticketsTable.escalated),
     db
-      .select({ retrievedDocs: ticketsTable.retrievedDocs })
+      .select({ retrievedDocs: ticketsTable.retrievedDocs, createdAt: ticketsTable.createdAt })
       .from(ticketsTable),
   ]);
 
@@ -221,11 +221,18 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
   const autoResponded = total - escalated;
 
   let totalSources = 0;
+  const sourcesByDate: Record<string, number> = {};
   for (const row of sourceRows) {
     const docs = normalizeRetrievedDocs(row.retrievedDocs);
     totalSources += docs.length;
+    const date = row.createdAt.toISOString().slice(0, 10);
+    sourcesByDate[date] = (sourcesByDate[date] || 0) + docs.length;
   }
   const avgSourcesPerTicket = total > 0 ? Math.round((totalSources / total) * 10) / 10 : 0;
+
+  const sourcesOverTime = Object.entries(sourcesByDate)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, sources]) => ({ date, sources }));
 
   res.json(
     GetTriageStatsResponse.parse({
@@ -240,6 +247,7 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
       },
       totalSources,
       avgSourcesPerTicket,
+      sourcesOverTime,
     }),
   );
 });
