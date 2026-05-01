@@ -7,10 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DomainBadge } from "@/components/domain-badge";
-import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X, RotateCcw } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X, RotateCcw, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { SourcesSection } from "@/components/sources-section";
 import type { RetrievedDoc } from "@workspace/api-client-react";
 
@@ -32,6 +32,13 @@ type StreamingState = StreamingMeta & {
 };
 
 const DRAFT_KEY = "triage-draft";
+const MAX_CHARS = 2000;
+
+const PLACEHOLDER_EXAMPLES = [
+  "My HackerRank test timed out in the middle of the assessment. Can you reset it?",
+  "How do I adjust the temperature parameter in Claude 3 Opus to make it more creative?",
+  "A customer's Visa payment failed with code 51. What does this mean?"
+];
 
 function readDraft(): string {
   try {
@@ -65,6 +72,9 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [textRestored, setTextRestored] = useState(false);
   const [restoredLabel, setRestoredLabel] = useState("RESTORED");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isFocused, setIsFocused] = useState(false);
+  
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamingRef = useRef<StreamingState | null>(null);
   const draftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,6 +82,15 @@ export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: history, isLoading: isHistoryLoading } = useListTickets();
+
+  const ticketsToday = history?.filter((t) => isToday(new Date(t.createdAt))).length ?? 0;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDER_EXAMPLES.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const hasDraft = !!readDraft();
@@ -229,40 +248,54 @@ export default function Home() {
 
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
+      <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/10 relative">
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/50 via-primary/10 to-transparent"></div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Triage Console</h1>
-            <p className="text-muted-foreground mt-1">Submit support tickets for instant classification and routing.</p>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">
+                Triage Console
+              </h1>
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                <div className="w-2 h-2 rounded-full bg-success animate-[pulse_2s_ease-in-out_infinite] shadow-[0_0_8px_rgba(0,255,136,0.6)]"></div>
+                <span className="text-[10px] font-mono font-bold text-success tracking-widest">SYSTEM ACTIVE</span>
+              </div>
+            </div>
+            <p className="text-muted-foreground text-sm font-mono">Submit support tickets for instant classification and routing.</p>
           </div>
-          <div className="flex items-center gap-2 text-sm font-mono bg-card px-3 py-1.5 border border-border">
-            <Cpu className="w-4 h-4 text-primary" />
-            <span className="text-muted-foreground">AGENT STATUS:</span>
-            <span className={`font-bold ${isSubmitting ? "text-yellow-400 animate-pulse" : "text-primary"}`}>
-              {isSubmitting ? "PROCESSING" : "READY"}
-            </span>
+          <div className="flex flex-col items-end gap-1">
+            <div className="text-[10px] font-mono text-muted-foreground tracking-widest">TICKETS TODAY</div>
+            <div className="text-2xl font-bold font-mono text-primary drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
+              {ticketsToday}
+            </div>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
           {/* Submission Form */}
           <div className="lg:col-span-5 space-y-6">
-            <Card className="border-primary/20 shadow-none rounded-none bg-card">
-              <CardHeader className="border-b border-border bg-muted/30 pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
+            <Card className="glass-card rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+              <CardHeader className="border-b border-white/5 bg-black/20 pb-4">
+                <CardTitle className="flex items-center gap-2 text-sm font-mono text-primary tracking-wider">
                   <Send className="w-4 h-4" />
-                  New Input Stream
+                  NEW INPUT STREAM
                 </CardTitle>
-                <CardDescription>Paste customer query here for analysis.</CardDescription>
+                <CardDescription className="text-xs text-muted-foreground font-mono">Paste customer query here for analysis.</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="relative">
+                  <div className="relative group">
                     <Textarea
                       data-testid="input-ticket"
-                      placeholder="User issue goes here..."
-                      className={`min-h-[200px] font-mono text-sm resize-none rounded-none focus-visible:ring-primary transition-colors duration-300 ${textRestored ? "border-emerald-500 ring-1 ring-emerald-500/50" : "border-border"}`}
+                      placeholder={!isFocused && !ticketText ? PLACEHOLDER_EXAMPLES[placeholderIndex] : ""}
+                      className={`min-h-[240px] font-mono text-sm resize-none rounded-lg transition-all duration-300 bg-black/40 
+                        ${isFocused ? 'border-primary ring-1 ring-primary shadow-[0_0_15px_rgba(0,212,255,0.2)]' : 'border-white/10'}
+                        ${textRestored ? "border-success ring-1 ring-success shadow-[0_0_15px_rgba(0,255,136,0.2)]" : ""}
+                      `}
                       value={ticketText}
+                      maxLength={MAX_CHARS}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
                       onChange={(e) => {
                         setTicketText(e.target.value);
                         if (streaming?.stopped) {
@@ -272,29 +305,43 @@ export default function Home() {
                       }}
                       disabled={isSubmitting}
                     />
+                    
                     {textRestored && (
-                      <span className="absolute top-2 right-2 text-xs font-mono font-bold text-emerald-500 bg-card px-1.5 py-0.5 border border-emerald-500/40 animate-in fade-in duration-200">
+                      <span className="absolute top-3 right-3 text-[10px] font-mono font-bold text-success bg-success/10 px-2 py-1 rounded border border-success/30 animate-in fade-in duration-200 backdrop-blur-md">
                         {restoredLabel}
                       </span>
                     )}
+
+                    <div className="flex justify-between items-center mt-2 px-1">
+                      <div className="text-[10px] font-mono text-muted-foreground transition-colors duration-300 group-focus-within:text-primary/70">
+                        {ticketText.length} / {MAX_CHARS}
+                      </div>
+                      {ticketText.length >= MAX_CHARS * 0.9 && (
+                        <div className="text-[10px] font-mono text-destructive animate-pulse">
+                          APPROACHING LIMIT
+                        </div>
+                      )}
+                    </div>
                   </div>
+
                   {isSubmitting ? (
                     <Button
                       data-testid="button-stop"
                       type="button"
-                      variant="destructive"
-                      className="w-full font-bold tracking-wide rounded-none flex items-center gap-2"
+                      variant="outline"
+                      className="w-full font-bold font-mono tracking-widest rounded-lg flex items-center gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:text-primary relative overflow-hidden group"
                       onClick={handleStop}
                     >
-                      <Square className="w-4 h-4 fill-current" />
-                      STOP
+                      <div className="absolute inset-0 bg-primary/10 w-full animate-[shimmer_2s_infinite] -translate-x-full group-hover:animate-none"></div>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      EXECUTING... <span className="text-[10px] opacity-70 ml-1">(CLICK TO ABORT)</span>
                     </Button>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Button
                         data-testid="button-submit"
                         type="submit"
-                        className="w-full font-bold tracking-wide rounded-none"
+                        className="w-full font-bold font-mono tracking-widest rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(0,212,255,0.3)] hover:shadow-[0_0_25px_rgba(0,212,255,0.5)] transition-all duration-300"
                         disabled={!ticketText.trim()}
                       >
                         EXECUTE TRIAGE
@@ -304,15 +351,15 @@ export default function Home() {
                           data-testid="button-retry"
                           type="button"
                           variant="outline"
-                          className="w-full font-bold tracking-wide rounded-none border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400 flex items-center gap-2 animate-in fade-in duration-200"
+                          className="w-full font-bold font-mono tracking-widest rounded-lg border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300 animate-in fade-in duration-200"
                           onClick={() => {
                             const text = ticketText;
                             setTicketText("");
                             streamTicket(text);
                           }}
                         >
-                          <RotateCcw className="w-4 h-4" />
-                          RETRY
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          RETRY ANALYSIS
                         </Button>
                       )}
                     </div>
@@ -327,40 +374,44 @@ export default function Home() {
             {lastStoppedResult && streaming && !streaming.stopped && (
               <div
                 data-testid="stopped-result-banner"
-                className="border border-amber-500/30 bg-amber-500/5 p-4 space-y-2 animate-in fade-in duration-300"
+                className="glass-card border-destructive/30 bg-destructive/10 p-4 rounded-xl animate-in fade-in slide-in-from-top-4 duration-300 backdrop-blur-md"
               >
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
-                    <Ban className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <span className="text-xs font-mono font-bold text-amber-500 tracking-wider">PREVIOUS PARTIAL RESULT</span>
+                    <Ban className="w-4 h-4 text-destructive shrink-0" />
+                    <span className="text-[10px] font-mono font-bold text-destructive tracking-widest">PREVIOUS PARTIAL RESULT</span>
                   </div>
                   <button
                     data-testid="button-dismiss-stopped"
                     onClick={() => setLastStoppedResult(null)}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-muted-foreground hover:text-white transition-colors"
                     aria-label="Dismiss"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="text-xs font-mono text-muted-foreground/60 truncate">
+                <div className="text-xs font-mono text-muted-foreground/60 truncate mb-2 px-1">
                   {lastStoppedResult.ticketText}
                 </div>
-                <div className="p-3 bg-muted border border-border text-xs font-mono leading-relaxed whitespace-pre-wrap max-h-[120px] overflow-y-auto text-muted-foreground">
+                <div className="p-3 bg-black/40 rounded-lg border border-white/5 text-xs font-mono leading-relaxed whitespace-pre-wrap max-h-[120px] overflow-y-auto text-muted-foreground shadow-inner">
                   {lastStoppedResult.response}
-                  <span className="inline-block ml-1 text-xs italic text-muted-foreground/70 font-mono select-none">▌ [response cut off]</span>
+                  <span className="inline-block ml-1 text-xs italic text-destructive/70 font-mono select-none">▌ [ABORTED]</span>
                 </div>
               </div>
             )}
-            <Card className="rounded-none shadow-none border-border bg-card min-h-[400px] flex flex-col">
-              <CardHeader className="border-b border-border bg-muted/30 pb-4">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <ActivityIcon className="w-4 h-4" />
-                    Latest Analysis Result
+            
+            <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] min-h-[500px] flex flex-col overflow-hidden">
+              <CardHeader className="border-b border-white/5 bg-black/20 pb-4 relative">
+                {streaming?.isStreaming && (
+                  <div className="absolute bottom-0 left-0 h-[2px] bg-primary w-full origin-left animate-[pulse_1s_ease-in-out_infinite] shadow-[0_0_10px_rgba(0,212,255,0.8)]"></div>
+                )}
+                <CardTitle className="text-sm font-mono flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-white tracking-wider">
+                    <ActivityIcon className="w-4 h-4 text-primary" />
+                    ANALYSIS RESULT
                   </span>
                   {streaming?.isStreaming && (
-                    <Badge variant="outline" className="animate-pulse bg-primary/10 text-primary border-primary/30">
+                    <Badge variant="outline" className="animate-pulse bg-primary/10 text-primary border-primary/30 text-[10px] tracking-widest">
                       ANALYZING...
                     </Badge>
                   )}
@@ -368,100 +419,124 @@ export default function Home() {
                     <Badge
                       data-testid="badge-stopped"
                       variant="outline"
-                      className="bg-amber-500/10 text-amber-500 border-amber-500/40 font-mono flex items-center gap-1"
+                      className="bg-destructive/10 text-destructive border-destructive/40 font-mono text-[10px] tracking-widest flex items-center gap-1"
                     >
                       <Ban className="w-3 h-3" />
-                      PARTIAL — STOPPED
+                      ABORTED
                     </Badge>
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6 flex-1 flex flex-col">
+              <CardContent className="pt-6 flex-1 flex flex-col p-6">
                 {isSubmitting && !streaming?.domain ? (
-                  <div className="space-y-4 flex-1 flex flex-col justify-center">
-                    <Skeleton className="h-8 w-1/3" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-5/6" />
-                    <div className="pt-4 grid grid-cols-2 gap-4">
-                      <Skeleton className="h-16 w-full" />
-                      <Skeleton className="h-16 w-full" />
+                  <div className="space-y-6 flex-1 flex flex-col justify-center max-w-2xl mx-auto w-full opacity-60">
+                    <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                      <Skeleton className="h-6 w-32 bg-white/10" />
+                      <Skeleton className="h-6 w-24 bg-white/10" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-24 bg-white/10" />
+                      <Skeleton className="h-16 w-full bg-white/10 rounded-lg" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-32 bg-white/10" />
+                      <Skeleton className="h-32 w-full bg-white/10 rounded-lg" />
                     </div>
                   </div>
                 ) : displayTicket && displayTicket.domain ? (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" data-testid="result-panel">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <DomainBadge domain={displayTicket.domain} confidence={displayTicket.domainConfidence} />
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out" data-testid="result-panel">
+                    <div className="flex flex-wrap items-center justify-between gap-4 bg-black/20 p-3 rounded-lg border border-white/5 backdrop-blur-sm">
+                      <div className="flex items-center gap-4">
+                        <DomainBadge domain={displayTicket.domain} confidence={displayTicket.domainConfidence} className="scale-105 origin-left" />
+                        
+                        <div className="w-px h-6 bg-white/10 hidden sm:block"></div>
+                        
                         {displayTicket.escalated ? (
-                          <Badge variant="destructive" className="rounded-none font-mono flex items-center gap-1" data-testid="status-escalated">
-                            <ShieldAlert className="w-3 h-3" />
+                          <Badge variant="destructive" className="rounded-md font-mono text-[10px] tracking-widest flex items-center gap-1.5 shadow-[0_0_10px_rgba(255,68,68,0.3)] px-2 py-1" data-testid="status-escalated">
+                            <ShieldAlert className="w-3.5 h-3.5" />
                             ESCALATED
                           </Badge>
                         ) : (
-                          <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/30 rounded-none font-mono flex items-center gap-1 hover:bg-emerald-500/30" data-testid="status-auto-responded">
-                            <CheckCircle2 className="w-3 h-3" />
+                          <Badge className="bg-success/10 text-success border border-success/30 rounded-md font-mono text-[10px] tracking-widest flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,255,136,0.2)] px-2 py-1" data-testid="status-auto-responded">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
                             AUTO-RESPONDED
                           </Badge>
                         )}
                       </div>
                       {"createdAt" in displayTicket && displayTicket.createdAt ? (
-                        <div className="text-xs text-muted-foreground font-mono flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                        <div className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded">
+                          <Clock className="w-3 h-3 text-primary/70" />
                           {format(new Date(displayTicket.createdAt as string), "HH:mm:ss.SSS")}
                         </div>
                       ) : null}
                     </div>
 
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-mono font-bold text-muted-foreground tracking-wider">INPUT</h4>
-                      <div className="p-3 bg-muted/30 border border-border text-sm font-mono overflow-y-auto max-h-[100px]">
-                        {displayTicket.ticketText}
-                      </div>
-                    </div>
-
-                    {displayTicket.escalated ? (
-                      <div className="space-y-4 border border-destructive/30 bg-destructive/5 p-4">
-                        <div>
-                          <h4 className="text-xs font-mono font-bold text-destructive tracking-wider flex items-center gap-2 mb-2">
-                            <AlertCircle className="w-4 h-4" />
-                            ESCALATION REASON
-                          </h4>
-                          <p className="text-sm font-medium text-foreground">{displayTicket.escalationReason}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2 md:col-span-2">
+                        <h4 className="text-[10px] font-mono font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/20"></span>
+                          ORIGINAL INPUT
+                        </h4>
+                        <div className="p-4 bg-black/30 rounded-lg border border-white/5 text-sm font-mono text-white/80 overflow-y-auto max-h-[120px] shadow-inner leading-relaxed">
+                          {displayTicket.ticketText}
                         </div>
-                        {displayTicket.escalationCategories?.length > 0 && (
-                          <div className="flex gap-2 flex-wrap">
-                            {displayTicket.escalationCategories.map((cat) => (
-                              <Badge key={cat} variant="outline" className="border-destructive/30 text-destructive text-xs rounded-none bg-background">
-                                {cat}
-                              </Badge>
-                            ))}
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
+                        {displayTicket.escalated ? (
+                          <div className="space-y-4 border border-destructive/30 bg-destructive/10 p-5 rounded-lg shadow-[inset_0_0_20px_rgba(255,68,68,0.05)] relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-destructive"></div>
+                            <div>
+                              <h4 className="text-[10px] font-mono font-bold text-destructive tracking-widest flex items-center gap-2 mb-3">
+                                <AlertCircle className="w-4 h-4" />
+                                ESCALATION REASON
+                              </h4>
+                              <p className="text-sm font-medium text-white leading-relaxed">{displayTicket.escalationReason}</p>
+                            </div>
+                            {displayTicket.escalationCategories?.length > 0 && (
+                              <div className="flex gap-2 flex-wrap pt-2">
+                                {displayTicket.escalationCategories.map((cat) => (
+                                  <Badge key={cat} variant="outline" className="border-destructive/30 text-destructive text-[10px] tracking-wider rounded bg-destructive/5 px-2 py-0.5">
+                                    {cat}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-2 relative">
+                            <h4 className="text-[10px] font-mono font-bold text-success tracking-widest flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_5px_rgba(0,255,136,0.8)]"></span>
+                              AI RESPONSE
+                            </h4>
+                            <div
+                              data-testid="text-response"
+                              className="p-5 bg-primary/5 rounded-lg border border-primary/20 text-sm leading-relaxed whitespace-pre-wrap min-h-[120px] text-white/90 shadow-[inset_0_0_20px_rgba(0,212,255,0.03)]"
+                            >
+                              {displayTicket.response}
+                              {streaming?.isStreaming && !displayTicket.escalated && (
+                                <span className="inline-block w-[2px] h-[1em] bg-primary ml-1 animate-[blink_1s_step-end_infinite] align-text-bottom shadow-[0_0_5px_rgba(0,212,255,0.8)]" />
+                              )}
+                              {streaming?.stopped && (
+                                <span className="inline-block ml-1 text-xs italic text-destructive/70 font-mono select-none">▌ [ABORTED]</span>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-mono font-bold text-emerald-500 tracking-wider">AI RESPONSE</h4>
-                        <div
-                          data-testid="text-response"
-                          className="p-4 bg-muted border border-border text-sm leading-relaxed whitespace-pre-wrap min-h-[80px]"
-                        >
-                          {displayTicket.response}
-                          {streaming?.isStreaming && !displayTicket.escalated && (
-                            <span className="inline-block w-[2px] h-[1em] bg-emerald-400 ml-0.5 animate-[blink_1s_step-end_infinite] align-text-bottom" />
-                          )}
-                          {streaming?.stopped && (
-                            <span className="inline-block ml-1 text-xs italic text-muted-foreground/70 font-mono select-none">▌ [response cut off]</span>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                    </div>
 
-                    <SourcesSection docs={displayTicket.retrievedDocs ?? []} />
+                    <div className="pt-2">
+                      <SourcesSection docs={displayTicket.retrievedDocs ?? []} />
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground font-mono text-sm space-y-4 opacity-50">
-                    <ActivityIcon className="w-12 h-12" />
-                    <p>AWAITING INPUT...</p>
+                  <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground font-mono text-sm space-y-6 opacity-40">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary blur-2xl opacity-20 rounded-full animate-pulse"></div>
+                      <ActivityIcon className="w-16 h-16 text-white relative z-10" />
+                    </div>
+                    <p className="tracking-widest">SYSTEM STANDBY // AWAITING INPUT</p>
                   </div>
                 )}
               </CardContent>

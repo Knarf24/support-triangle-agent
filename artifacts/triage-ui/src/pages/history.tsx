@@ -75,16 +75,17 @@ export default function History() {
 
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
+      <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500 relative z-10">
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-6 relative">
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/50 via-primary/10 to-transparent"></div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Audit Log</h1>
-            <p className="text-muted-foreground mt-1">Complete history of triaged support interactions.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,212,255,0.2)]">Audit Log</h1>
+            <p className="text-muted-foreground mt-1 font-mono text-sm">Complete history of triaged support interactions.</p>
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-none font-mono text-xs gap-2 self-start md:self-auto"
+            className="rounded-lg font-mono text-xs gap-2 self-start md:self-auto border-white/20 hover:border-primary hover:bg-primary/10 hover:text-primary transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)] bg-black/40 backdrop-blur-md"
             onClick={exportCsv}
             disabled={!tickets || tickets.length === 0}
             data-testid="button-export-csv"
@@ -94,21 +95,21 @@ export default function History() {
           </Button>
         </header>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-center bg-card p-4 border border-border">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="flex flex-col sm:flex-row gap-4 items-center glass-card rounded-xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+          <div className="relative flex-1 w-full group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
             <Input 
               placeholder="Search ticket content..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 rounded-none border-border bg-background"
+              className="pl-9 rounded-lg border-white/10 bg-black/40 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all duration-300 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus-visible:shadow-[0_0_15px_rgba(0,212,255,0.2),inset_0_0_10px_rgba(0,0,0,0.5)] font-mono text-sm h-10"
             />
           </div>
           <Select value={domainFilter} onValueChange={setDomainFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] rounded-none border-border bg-background">
+            <SelectTrigger className="w-full sm:w-[180px] rounded-lg border-white/10 bg-black/40 focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 h-10 font-mono text-xs">
               <SelectValue placeholder="Domain" />
             </SelectTrigger>
-            <SelectContent className="rounded-none">
+            <SelectContent className="rounded-lg border-white/10 bg-[#0F1423] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] font-mono text-xs">
               <SelectItem value="all">All Domains</SelectItem>
               <SelectItem value="hackerrank">HackerRank</SelectItem>
               <SelectItem value="claude">Claude</SelectItem>
@@ -117,56 +118,56 @@ export default function History() {
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] rounded-none border-border bg-background">
+            <SelectTrigger className="w-full sm:w-[180px] rounded-lg border-white/10 bg-black/40 focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 h-10 font-mono text-xs">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="rounded-none">
+            <SelectContent className="rounded-lg border-white/10 bg-[#0F1423] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] font-mono text-xs">
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="auto">Auto-Responded</SelectItem>
               <SelectItem value="escalated">Escalated</SelectItem>
             </SelectContent>
           </Select>
           <Select value={sourcesFilter} onValueChange={setSourcesFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] rounded-none border-border bg-background">
+            <SelectTrigger className="w-full sm:w-[180px] rounded-lg border-white/10 bg-black/40 focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 h-10 font-mono text-xs">
               <SelectValue placeholder="Sources" />
             </SelectTrigger>
-            <SelectContent className="rounded-none">
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="with">With sources</SelectItem>
-              <SelectItem value="without">Without sources</SelectItem>
+            <SelectContent className="rounded-lg border-white/10 bg-[#0F1423] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] font-mono text-xs">
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="with">With Sources</SelectItem>
+              <SelectItem value="without">Without Sources</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="border border-border bg-card">
+        <div className="glass-card rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
           <Table>
-            <TableHeader className="bg-muted/50">
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[32px]" />
-                <TableHead className="w-[100px] font-mono text-xs">ID</TableHead>
-                <TableHead className="w-[180px] font-mono text-xs">TIMESTAMP</TableHead>
-                <TableHead className="w-[150px] font-mono text-xs">DOMAIN</TableHead>
-                <TableHead className="w-[140px] font-mono text-xs">STATUS</TableHead>
-                <TableHead className="w-[90px] font-mono text-xs">SOURCES</TableHead>
-                <TableHead className="font-mono text-xs">CONTENT SNIPPET</TableHead>
+            <TableHeader className="bg-black/40 border-b border-white/10">
+              <TableRow className="hover:bg-transparent border-none">
+                <TableHead className="w-[40px]" />
+                <TableHead className="w-[100px] font-mono text-xs tracking-wider text-muted-foreground/80 font-bold">ID</TableHead>
+                <TableHead className="w-[180px] font-mono text-xs tracking-wider text-muted-foreground/80 font-bold">TIMESTAMP</TableHead>
+                <TableHead className="w-[160px] font-mono text-xs tracking-wider text-muted-foreground/80 font-bold">DOMAIN</TableHead>
+                <TableHead className="w-[150px] font-mono text-xs tracking-wider text-muted-foreground/80 font-bold">STATUS</TableHead>
+                <TableHead className="w-[100px] font-mono text-xs tracking-wider text-muted-foreground/80 font-bold text-center">SOURCES</TableHead>
+                <TableHead className="font-mono text-xs tracking-wider text-muted-foreground/80 font-bold">CONTENT SNIPPET</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-8" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableRow key={i} className="border-b border-white/5">
+                    <TableCell><Skeleton className="h-4 w-4 bg-white/10" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-12 bg-white/10" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32 bg-white/10" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-24 bg-white/10" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-24 bg-white/10" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-8 mx-auto bg-white/10" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-full bg-white/10" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredTickets?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center text-muted-foreground font-mono">
+                  <TableCell colSpan={7} className="h-48 text-center text-muted-foreground font-mono bg-black/20">
                     NO RECORDS FOUND MATCHING CRITERIA
                   </TableCell>
                 </TableRow>
@@ -177,20 +178,22 @@ export default function History() {
                   return (
                     <Fragment key={ticket.id}>
                       <TableRow
-                        className="hover:bg-muted/50 group cursor-pointer select-none"
+                        className={`hover:bg-primary/5 cursor-pointer select-none border-b border-white/5 transition-all duration-200 group ${isExpanded ? 'bg-primary/5' : ''}`}
                         onClick={() => toggleExpand(ticket.id)}
                         data-testid={`history-row-${ticket.id}`}
                       >
-                        <TableCell className="pl-3 pr-0">
-                          {isExpanded
-                            ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-                            : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                          }
+                        <TableCell className="pl-4 pr-0">
+                          <div className={`p-1 rounded-md transition-colors ${isExpanded ? 'bg-primary/20 text-primary' : 'text-muted-foreground group-hover:text-primary group-hover:bg-primary/10'}`}>
+                            {isExpanded
+                              ? <ChevronDown className="w-4 h-4" />
+                              : <ChevronRight className="w-4 h-4" />
+                            }
+                          </div>
                         </TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground">
+                        <TableCell className="font-mono text-xs text-muted-foreground group-hover:text-primary transition-colors">
                           #{ticket.id.toString().padStart(4, '0')}
                         </TableCell>
-                        <TableCell className="font-mono text-xs">
+                        <TableCell className="font-mono text-xs text-white/80">
                           {format(new Date(ticket.createdAt), "MMM dd, HH:mm:ss")}
                         </TableCell>
                         <TableCell>
@@ -198,55 +201,59 @@ export default function History() {
                         </TableCell>
                         <TableCell>
                           {ticket.escalated ? (
-                            <div className="flex items-center text-destructive text-xs font-mono font-bold gap-1.5">
+                            <div className="flex items-center text-destructive text-[10px] font-mono font-bold tracking-widest gap-1.5 drop-shadow-[0_0_5px_rgba(255,68,68,0.5)]">
                               <ShieldAlert className="w-3.5 h-3.5" />
                               ESCALATED
                             </div>
                           ) : (
-                            <div className="flex items-center text-emerald-500 text-xs font-mono font-bold gap-1.5">
+                            <div className="flex items-center text-success text-[10px] font-mono font-bold tracking-widest gap-1.5 drop-shadow-[0_0_5px_rgba(0,255,136,0.5)]">
                               <CheckCircle2 className="w-3.5 h-3.5" />
                               RESOLVED
                             </div>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           {hasDocs ? (
-                            <Badge variant="outline" className="rounded-none font-mono text-[10px] border-primary/30 text-primary tabular-nums">
+                            <Badge variant="outline" className="rounded bg-primary/10 font-mono text-[10px] border-primary/30 text-primary tabular-nums shadow-[0_0_8px_rgba(0,212,255,0.2)]">
                               {ticket.retrievedDocs.length}
                             </Badge>
                           ) : (
-                            <span className="text-xs font-mono text-muted-foreground/40">—</span>
+                            <span className="text-xs font-mono text-muted-foreground/30">—</span>
                           )}
                         </TableCell>
-                        <TableCell className="max-w-[400px]">
-                          <div className="truncate text-sm opacity-80 group-hover:opacity-100 transition-opacity font-mono">
+                        <TableCell className="max-w-[350px]">
+                          <div className="truncate text-xs opacity-70 group-hover:opacity-100 transition-opacity font-mono text-white/90">
                             {ticket.ticketText}
                           </div>
                         </TableCell>
                       </TableRow>
 
                       {isExpanded && (
-                        <TableRow key={`${ticket.id}-detail`} className="bg-muted/20 hover:bg-muted/20">
+                        <TableRow key={`${ticket.id}-detail`} className="bg-black/40 border-b border-white/5 shadow-inner">
                           <TableCell colSpan={7} className="p-0">
-                            <div className="px-6 py-4 space-y-4 border-t border-border/40">
-                              <div className="space-y-1.5">
-                                <h4 className="text-[10px] font-mono font-bold text-muted-foreground tracking-wider">INPUT</h4>
-                                <div className="p-3 bg-background border border-border text-sm font-mono whitespace-pre-wrap max-h-[120px] overflow-y-auto">
+                            <div className="px-8 py-6 space-y-6 animate-in slide-in-from-top-2 fade-in duration-300">
+                              <div className="space-y-2">
+                                <h4 className="text-[10px] font-mono font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                                  <span className="w-1 h-1 rounded-full bg-white/20"></span>
+                                  INPUT
+                                </h4>
+                                <div className="p-4 bg-black/60 rounded-lg border border-white/5 text-sm font-mono text-white/90 whitespace-pre-wrap max-h-[160px] overflow-y-auto shadow-inner leading-relaxed">
                                   {ticket.ticketText}
                                 </div>
                               </div>
 
                               {ticket.escalated ? (
-                                <div className="space-y-2 border border-destructive/30 bg-destructive/5 p-3">
-                                  <h4 className="text-[10px] font-mono font-bold text-destructive tracking-wider flex items-center gap-2">
+                                <div className="space-y-3 border border-destructive/30 bg-destructive/10 p-4 rounded-lg shadow-[inset_0_0_20px_rgba(255,68,68,0.05)] relative overflow-hidden">
+                                  <div className="absolute top-0 left-0 w-1 h-full bg-destructive"></div>
+                                  <h4 className="text-[10px] font-mono font-bold text-destructive tracking-widest flex items-center gap-2">
                                     <AlertCircle className="w-3.5 h-3.5" />
                                     ESCALATION REASON
                                   </h4>
-                                  <p className="text-sm text-foreground">{ticket.escalationReason}</p>
+                                  <p className="text-sm font-medium text-white/90">{ticket.escalationReason}</p>
                                   {ticket.escalationCategories?.length > 0 && (
                                     <div className="flex gap-2 flex-wrap pt-1">
                                       {ticket.escalationCategories.map((cat: string) => (
-                                        <Badge key={cat} variant="outline" className="border-destructive/30 text-destructive text-xs rounded-none bg-background">
+                                        <Badge key={cat} variant="outline" className="border-destructive/30 text-destructive text-[10px] tracking-wider rounded bg-destructive/5 px-2 py-0.5">
                                           {cat}
                                         </Badge>
                                       ))}
@@ -254,20 +261,28 @@ export default function History() {
                                   )}
                                 </div>
                               ) : ticket.response ? (
-                                <div className="space-y-1.5">
-                                  <h4 className="text-[10px] font-mono font-bold text-emerald-500 tracking-wider">AI RESPONSE</h4>
-                                  <div className="p-3 bg-background border border-border text-sm leading-relaxed whitespace-pre-wrap max-h-[160px] overflow-y-auto font-mono">
+                                <div className="space-y-2">
+                                  <h4 className="text-[10px] font-mono font-bold text-success tracking-widest flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_5px_rgba(0,255,136,0.8)]"></span>
+                                    AI RESPONSE
+                                  </h4>
+                                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20 text-sm leading-relaxed whitespace-pre-wrap max-h-[200px] overflow-y-auto font-mono text-white/90 shadow-[inset_0_0_20px_rgba(0,212,255,0.03)]">
                                     {ticket.response}
                                   </div>
                                 </div>
                               ) : null}
 
                               {hasDocs && (
-                                <SourcesSection docs={ticket.retrievedDocs} />
+                                <div className="pt-2">
+                                  <SourcesSection docs={ticket.retrievedDocs} />
+                                </div>
                               )}
 
                               {!hasDocs && (
-                                <p className="text-[10px] font-mono text-muted-foreground/50 tracking-wider">NO SOURCE DOCUMENTS FOR THIS TICKET</p>
+                                <div className="flex items-center gap-2 pt-2 border-t border-white/5 mt-4 text-[10px] font-mono text-muted-foreground/40 tracking-widest">
+                                  <div className="w-1 h-1 rounded-full bg-muted-foreground/30"></div>
+                                  NO SOURCE DOCUMENTS
+                                </div>
                               )}
                             </div>
                           </TableCell>
