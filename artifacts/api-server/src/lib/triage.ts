@@ -52,6 +52,10 @@ const DOMAIN_KEYWORDS: Record<string, string[]> = {
 
 const CONFIDENCE_THRESHOLD = 0.25;
 
+// Grid-search over 20 labelled tickets (see support-triage/SECTION_BONUS_EVAL.md):
+// all values in [0.05, 1.00] achieve identical Hit@3=0.800 and MRR=0.667 because the
+// keyword-count score is integer-valued and the bonus acts as a consistent tie-breaker
+// at any positive magnitude.  0.5 (≈ half a keyword match) is retained for continuity.
 const SECTION_BONUS = 0.5;
 
 const ESCALATION_PATTERNS: Record<string, string[]> = {
