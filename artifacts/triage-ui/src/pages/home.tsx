@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DomainBadge } from "@/components/domain-badge";
-import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Send, ShieldAlert, Cpu, Square, Ban, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -34,10 +34,12 @@ type StreamingState = StreamingMeta & {
 export default function Home() {
   const [ticketText, setTicketText] = useState("");
   const [streaming, setStreaming] = useState<StreamingState | null>(null);
+  const [lastStoppedResult, setLastStoppedResult] = useState<StreamingState | null>(null);
   const [suppressHistory, setSuppressHistory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [textRestored, setTextRestored] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const streamingRef = useRef<StreamingState | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: history, isLoading: isHistoryLoading } = useListTickets();
@@ -52,7 +54,8 @@ export default function Home() {
 
     setIsSubmitting(true);
     setSuppressHistory(false);
-    setStreaming({
+
+    const initialState: StreamingState = {
       ticketText: text,
       domain: "",
       domainConfidence: 0,
@@ -62,7 +65,9 @@ export default function Home() {
       retrievedDocs: [],
       response: "",
       isStreaming: true,
-    });
+    };
+    streamingRef.current = initialState;
+    setStreaming(initialState);
 
     let aborted = false;
 
@@ -97,19 +102,32 @@ export default function Home() {
             const data = JSON.parse(line.slice(6));
 
             if (data.type === "meta") {
-              setStreaming((prev) => prev && ({
-                ...prev,
-                domain: data.domain,
-                domainConfidence: data.domainConfidence,
-                escalated: data.escalated,
-                escalationReason: data.escalationReason,
-                escalationCategories: data.escalationCategories,
-                retrievedDocs: data.retrievedDocs,
-              }));
+              setStreaming((prev) => {
+                const next = prev && ({
+                  ...prev,
+                  domain: data.domain,
+                  domainConfidence: data.domainConfidence,
+                  escalated: data.escalated,
+                  escalationReason: data.escalationReason,
+                  escalationCategories: data.escalationCategories,
+                  retrievedDocs: data.retrievedDocs,
+                });
+                if (next) streamingRef.current = next;
+                return next;
+              });
             } else if (data.type === "chunk") {
-              setStreaming((prev) => prev && ({ ...prev, response: prev.response + data.text }));
+              setStreaming((prev) => {
+                const next = prev && ({ ...prev, response: prev.response + data.text });
+                if (next) streamingRef.current = next;
+                return next;
+              });
             } else if (data.type === "done") {
-              setStreaming((prev) => prev && ({ ...prev, isStreaming: false, id: data.id }));
+              setStreaming((prev) => {
+                const next = prev && ({ ...prev, isStreaming: false, id: data.id });
+                if (next) streamingRef.current = next;
+                return next;
+              });
+              setLastStoppedResult(null);
               queryClient.invalidateQueries({ queryKey: getListTicketsQueryKey() });
               queryClient.invalidateQueries({ queryKey: getGetTriageStatsQueryKey() });
             }
@@ -121,7 +139,11 @@ export default function Home() {
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
         aborted = true;
-        setStreaming((prev) => prev && ({ ...prev, isStreaming: false, stopped: true }));
+        const stoppedState = streamingRef.current
+          ? { ...streamingRef.current, isStreaming: false, stopped: true }
+          : null;
+        setStreaming(stoppedState);
+        if (stoppedState) setLastStoppedResult(stoppedState);
         setTicketText(text);
         setTextRestored(true);
         setTimeout(() => setTextRestored(false), 2000);
@@ -228,6 +250,34 @@ export default function Home() {
 
           {/* Results Display */}
           <div className="lg:col-span-7 space-y-6">
+            {lastStoppedResult && streaming && !streaming.stopped && (
+              <div
+                data-testid="stopped-result-banner"
+                className="border border-amber-500/30 bg-amber-500/5 p-4 space-y-2 animate-in fade-in duration-300"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Ban className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span className="text-xs font-mono font-bold text-amber-500 tracking-wider">PREVIOUS PARTIAL RESULT</span>
+                  </div>
+                  <button
+                    data-testid="button-dismiss-stopped"
+                    onClick={() => setLastStoppedResult(null)}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Dismiss"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="text-xs font-mono text-muted-foreground/60 truncate">
+                  {lastStoppedResult.ticketText}
+                </div>
+                <div className="p-3 bg-muted border border-border text-xs font-mono leading-relaxed whitespace-pre-wrap max-h-[120px] overflow-y-auto text-muted-foreground">
+                  {lastStoppedResult.response}
+                  <span className="inline-block ml-1 text-xs italic text-muted-foreground/70 font-mono select-none">▌ [response cut off]</span>
+                </div>
+              </div>
+            )}
             <Card className="rounded-none shadow-none border-border bg-card min-h-[400px] flex flex-col">
               <CardHeader className="border-b border-border bg-muted/30 pb-4">
                 <CardTitle className="text-lg flex items-center justify-between">
