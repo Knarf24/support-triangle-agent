@@ -9,26 +9,12 @@ import {
   GetTicketResponse,
   GetTriageStatsResponse,
 } from "@workspace/api-zod";
-import { triageTicket, classifyDomain, evaluateRisk, retrieveDocs, extractDocTitle } from "../lib/triage";
+import { triageTicket, classifyDomain, evaluateRisk, retrieveDocs } from "../lib/triage";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import type { RetrievedDoc } from "@workspace/db";
+import { normalizeRetrievedDocs } from "../lib/normalize-docs";
 
 const router: IRouter = Router();
-
-function normalizeRetrievedDocs(docs: unknown): RetrievedDoc[] {
-  if (!Array.isArray(docs)) return [];
-  return docs.map((d) => {
-    if (d === null || typeof d !== "object") {
-      console.warn("[normalizeRetrievedDocs] Unexpected non-object entry in retrieved_docs:", d);
-      throw new Error(`Retrieved doc entry must be an object, got: ${typeof d}`);
-    }
-    const obj = d as Record<string, unknown>;
-    const content = typeof obj.content === "string" ? obj.content : "";
-    const title = typeof obj.title === "string" && obj.title ? obj.title : extractDocTitle(content);
-    const url = typeof obj.url === "string" ? obj.url : undefined;
-    return url ? { title, content, url } : { title, content };
-  });
-}
 
 router.post("/triage", async (req, res): Promise<void> => {
   const parsed = TriageTicketBody.safeParse(req.body);
