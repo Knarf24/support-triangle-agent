@@ -174,6 +174,51 @@ export default function Stats() {
           </CardContent>
         </Card>
 
+        <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+          <CardHeader className="border-b border-white/5 bg-black/20 pb-4">
+            <CardTitle className="text-xs font-mono font-bold text-primary tracking-[0.2em] flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              KB SOURCES BY DOMAIN
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-6 space-y-3">
+                <Skeleton className="h-10 w-full bg-white/5" />
+                <Skeleton className="h-10 w-full bg-white/5" />
+                <Skeleton className="h-10 w-full bg-white/5" />
+                <Skeleton className="h-10 w-full bg-white/5" />
+              </div>
+            ) : (
+              <div className="divide-y divide-white/5">
+                {[
+                  { key: "hackerrank", label: "HackerRank", color: "hsl(var(--domain-hackerrank))" },
+                  { key: "claude", label: "Claude", color: "hsl(var(--domain-claude))" },
+                  { key: "visa", label: "Visa", color: "hsl(var(--domain-visa))" },
+                  { key: "unknown", label: "Unknown", color: "hsl(var(--domain-unknown))" },
+                ].map(({ key, label, color }) => {
+                  const count = stats?.sourcesByDomain?.[key as keyof typeof stats.sourcesByDomain] ?? 0;
+                  const pct = stats?.totalSources ? Math.round((count / stats.totalSources) * 100) : 0;
+                  return (
+                    <div key={key} className="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                      <span className="text-xs font-mono font-bold text-foreground w-28 tracking-wide">{label}</span>
+                      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${pct}%`, backgroundColor: color }}
+                        />
+                      </div>
+                      <span className="text-xs font-mono text-muted-foreground w-8 text-right">{pct}%</span>
+                      <span className="text-xs font-mono font-bold text-foreground w-12 text-right">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
             <CardHeader className="border-b border-white/5 bg-black/20 pb-4">

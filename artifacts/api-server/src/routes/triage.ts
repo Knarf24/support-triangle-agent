@@ -199,7 +199,7 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
       .from(ticketsTable)
       .groupBy(ticketsTable.domain, ticketsTable.escalated),
     db
-      .select({ retrievedDocs: ticketsTable.retrievedDocs, createdAt: ticketsTable.createdAt })
+      .select({ domain: ticketsTable.domain, retrievedDocs: ticketsTable.retrievedDocs, createdAt: ticketsTable.createdAt })
       .from(ticketsTable),
   ]);
 
@@ -222,12 +222,18 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
 
   let totalSources = 0;
   const sourcesByDate: Record<string, number> = {};
+  const sourcesByDomain: Record<string, number> = { hackerrank: 0, claude: 0, visa: 0, unknown: 0 };
+
   for (const row of sourceRows) {
     const docs = normalizeRetrievedDocs(row.retrievedDocs);
     totalSources += docs.length;
+    const domain = row.domain as string;
+    const domainKey = domain in sourcesByDomain ? domain : "unknown";
+    sourcesByDomain[domainKey] = (sourcesByDomain[domainKey] || 0) + docs.length;
     const date = row.createdAt.toISOString().slice(0, 10);
     sourcesByDate[date] = (sourcesByDate[date] || 0) + docs.length;
   }
+
   const avgSourcesPerTicket = total > 0 ? Math.round((totalSources / total) * 10) / 10 : 0;
 
   const sourcesOverTime = Object.entries(sourcesByDate)
@@ -248,6 +254,12 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
       totalSources,
       avgSourcesPerTicket,
       sourcesOverTime,
+      sourcesByDomain: {
+        hackerrank: sourcesByDomain["hackerrank"] || 0,
+        claude: sourcesByDomain["claude"] || 0,
+        visa: sourcesByDomain["visa"] || 0,
+        unknown: sourcesByDomain["unknown"] || 0,
+      },
     }),
   );
 });

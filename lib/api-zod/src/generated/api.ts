@@ -117,4 +117,10 @@ export const GetTriageStatsResponse = zod.object({
       sources: zod.number(),
     }),
   ),
+  sourcesByDomain: zod.object({
+    hackerrank: zod.number(),
+    claude: zod.number(),
+    visa: zod.number(),
+    unknown: zod.number(),
+  }),
 });
