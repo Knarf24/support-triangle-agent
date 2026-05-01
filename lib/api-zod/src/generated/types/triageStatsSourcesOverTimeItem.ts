@@ -6,7 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface TriageRequest {
-  ticketText: string;
-  inputMethod?: string;
-}
+export type TriageStatsSourcesOverTimeItem = {
+  date: string;
+  sources: number;
+};

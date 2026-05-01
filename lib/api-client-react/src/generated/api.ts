@@ -19,6 +19,7 @@ import type {
 import type {
   ErrorResponse,
   HealthStatus,
+  StartupStatusResponse,
   TicketResult,
   TriageRequest,
   TriageStats,
@@ -100,6 +101,81 @@ export function useHealthCheck<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getHealthCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get startup migration status
+ */
+export const getGetStartupStatusUrl = () => {
+  return `/api/startup-status`;
+};
+
+export const getStartupStatus = async (
+  options?: RequestInit,
+): Promise<StartupStatusResponse> => {
+  return customFetch<StartupStatusResponse>(getGetStartupStatusUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetStartupStatusQueryKey = () => {
+  return [`/api/startup-status`] as const;
+};
+
+export const getGetStartupStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getStartupStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getStartupStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetStartupStatusQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getStartupStatus>>
+  > = ({ signal }) => getStartupStatus({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getStartupStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetStartupStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getStartupStatus>>
+>;
+export type GetStartupStatusQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get startup migration status
+ */
+
+export function useGetStartupStatus<
+  TData = Awaited<ReturnType<typeof getStartupStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getStartupStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetStartupStatusQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -9,8 +9,13 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface StartupStatusResponse {
+  migrationFailed: boolean;
+}
+
 export interface TriageRequest {
   ticketText: string;
+  inputMethod?: string;
 }
 
 export interface RetrievedDoc {
@@ -41,10 +46,17 @@ export type TriageStatsByDomain = {
   unknown: number;
 };
 
-export interface TriageStatsSourcesOverTimeItem {
+export type TriageStatsSourcesOverTimeItem = {
   date: string;
   sources: number;
-}
+};
+
+export type TriageStatsSourcesByDomain = {
+  hackerrank: number;
+  claude: number;
+  visa: number;
+  unknown: number;
+};
 
 export interface TriageStats {
   total: number;
@@ -54,6 +66,7 @@ export interface TriageStats {
   totalSources: number;
   avgSourcesPerTicket: number;
   sourcesOverTime: TriageStatsSourcesOverTimeItem[];
+  sourcesByDomain: TriageStatsSourcesByDomain;
 }
 
 export interface ErrorResponse {
