@@ -41,20 +41,36 @@ export default function History() {
     const headers = [
       "id", "timestamp", "domain", "confidence_pct",
       "escalated", "escalation_reason", "escalation_categories",
-      "sources_count", "ticket_text", "response"
+      "sources_count", "kb_sections", "ticket_text", "response"
     ];
-    const rows = [...tickets].reverse().map((t) => [
-      t.id,
-      format(new Date(t.createdAt), "yyyy-MM-dd HH:mm:ss"),
-      t.domain,
-      Math.round((t.domainConfidence ?? 0) * 100),
-      t.escalated ? "true" : "false",
-      t.escalationReason ?? "",
-      Array.isArray(t.escalationCategories) ? t.escalationCategories.join(";") : "",
-      Array.isArray(t.retrievedDocs) ? t.retrievedDocs.length : 0,
-      t.ticketText,
-      t.response ?? "",
-    ].map(escapeCsv).join(","));
+    const rows = [...tickets].reverse().map((t) => {
+      const docs = Array.isArray(t.retrievedDocs) ? t.retrievedDocs : [];
+      const sections = [
+        ...new Set(
+          docs
+            .map((d: { section?: string; title?: string }) => {
+              const sec = d.section ?? "";
+              const title = d.title ?? "";
+              if (sec && title) return `${sec}:${title}`;
+              return sec || title;
+            })
+            .filter(Boolean)
+        ),
+      ].join(";");
+      return [
+        t.id,
+        format(new Date(t.createdAt), "yyyy-MM-dd HH:mm:ss"),
+        t.domain,
+        Math.round((t.domainConfidence ?? 0) * 100),
+        t.escalated ? "true" : "false",
+        t.escalationReason ?? "",
+        Array.isArray(t.escalationCategories) ? t.escalationCategories.join(";") : "",
+        docs.length,
+        sections,
+        t.ticketText,
+        t.response ?? "",
+      ].map(escapeCsv).join(",");
+    });
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);

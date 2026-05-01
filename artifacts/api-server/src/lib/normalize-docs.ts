@@ -24,6 +24,10 @@ export function normalizeRetrievedDocs(docs: unknown): RetrievedDoc[] {
     const content = typeof obj.content === "string" ? obj.content : "";
     const title = typeof obj.title === "string" && obj.title ? obj.title : extractDocTitle(content);
     const url = typeof obj.url === "string" ? obj.url : undefined;
-    return url ? { title, content, url } : { title, content };
+    const section = typeof obj.section === "string" && obj.section ? obj.section : undefined;
+    const base: RetrievedDoc = { title, content };
+    if (url) base.url = url;
+    if (section) base.section = section;
+    return base;
   });
 }
