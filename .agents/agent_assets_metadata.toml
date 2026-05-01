@@ -12,3 +12,9 @@ id = "3Tq32XiE3MAxL6e3v9ViI"
 uri = "file://support_issues/output.csv"
 type = "table"
 title = "output.csv — 20-ticket submission (ticket_id, domain, issue_type, action, confidence, response)"
+
+[[outputs]]
+id = "FHTklIr1hWDYSVmyV-eNB"
+uri = "file://code.zip"
+type = "unspecified"
+title = "code.zip — full project (2.1 MB)"
