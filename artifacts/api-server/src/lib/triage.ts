@@ -257,6 +257,18 @@ export async function generateResponse(
   escalated: boolean,
   escalationReason: string,
 ): Promise<string> {
+  if (escalated && domain === "unknown") {
+    return `Thank you for reaching out! We weren't able to automatically identify which product or service your request relates to, so a specialist will follow up to make sure you get the right help.
+
+To route your ticket quickly, could you let us know which of the following services you're contacting about?
+
+• **HackerRank** — coding assessments, contests, hiring tests, or submissions
+• **Claude (Anthropic)** — AI assistant, API access, plans, or billing
+• **Visa** — credit/debit cards, payments, disputes, or account issues
+
+A member of our team will review your ticket and respond within 2–4 business hours.`;
+  }
+
   if (escalated) {
     return `Thank you for reaching out to our support team. Your ticket has been flagged for priority review by a human specialist (${escalationReason.toLowerCase()}). A member of our team will contact you within 2-4 business hours. Please do not reply to automated messages — wait for a specialist to follow up directly.`;
   }
@@ -297,7 +309,15 @@ export async function triageTicket(ticketText: string): Promise<{
   response: string;
 }> {
   const { domain, confidence } = classifyDomain(ticketText);
-  const { escalated, escalationReason, escalationCategories } = evaluateRisk(ticketText);
+  let { escalated, escalationReason, escalationCategories } = evaluateRisk(ticketText);
+
+  // Unknown domain: always escalate and ask for clarification
+  if (domain === "unknown") {
+    escalated = true;
+    escalationReason = "Cannot determine product — clarification required";
+    escalationCategories = ["unknown_domain"];
+  }
+
   const retrievedDocs = retrieveDocs(ticketText, domain);
   const response = await generateResponse(ticketText, domain, retrievedDocs, escalated, escalationReason);
 
