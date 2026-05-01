@@ -12,4 +12,6 @@ export interface TriageStats {
   autoResponded: number;
   escalated: number;
   byDomain: TriageStatsByDomain;
+  totalSources: number;
+  avgSourcesPerTicket: number;
 }

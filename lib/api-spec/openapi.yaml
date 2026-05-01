@@ -185,11 +185,17 @@ components:
             - claude
             - visa
             - unknown
+        totalSources:
+          type: integer
+        avgSourcesPerTicket:
+          type: number
       required:
         - total
         - autoResponded
         - escalated
         - byDomain
+        - totalSources
+        - avgSourcesPerTicket
 
     RetrievedDoc:
       type: object

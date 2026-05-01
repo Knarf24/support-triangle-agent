@@ -190,14 +190,19 @@ router.get("/tickets/:id", async (req, res): Promise<void> => {
 });
 
 router.get("/triage/stats", async (req, res): Promise<void> => {
-  const rows = await db
-    .select({
-      domain: ticketsTable.domain,
-      escalated: ticketsTable.escalated,
-      total: count(),
-    })
-    .from(ticketsTable)
-    .groupBy(ticketsTable.domain, ticketsTable.escalated);
+  const [rows, sourceRows] = await Promise.all([
+    db
+      .select({
+        domain: ticketsTable.domain,
+        escalated: ticketsTable.escalated,
+        total: count(),
+      })
+      .from(ticketsTable)
+      .groupBy(ticketsTable.domain, ticketsTable.escalated),
+    db
+      .select({ retrievedDocs: ticketsTable.retrievedDocs })
+      .from(ticketsTable),
+  ]);
 
   let total = 0;
   let escalated = 0;
@@ -216,6 +221,13 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
 
   const autoResponded = total - escalated;
 
+  let totalSources = 0;
+  for (const row of sourceRows) {
+    const docs = normalizeRetrievedDocs(row.retrievedDocs);
+    totalSources += docs.length;
+  }
+  const avgSourcesPerTicket = total > 0 ? Math.round((totalSources / total) * 10) / 10 : 0;
+
   res.json(
     GetTriageStatsResponse.parse({
       total,
@@ -227,6 +239,8 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
         visa: byDomain["visa"] || 0,
         unknown: byDomain["unknown"] || 0,
       },
+      totalSources,
+      avgSourcesPerTicket,
     }),
   );
 });

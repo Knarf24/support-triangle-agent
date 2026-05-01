@@ -105,4 +105,6 @@ export const GetTriageStatsResponse = zod.object({
     visa: zod.number(),
     unknown: zod.number(),
   }),
+  totalSources: zod.number(),
+  avgSourcesPerTicket: zod.number(),
 });

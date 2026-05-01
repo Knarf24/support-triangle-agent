@@ -3,7 +3,7 @@ import { useGetTriageStats } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { BrainCircuit, Activity, ShieldAlert, CheckCircle2, TrendingUp, Layers } from "lucide-react";
+import { Activity, ShieldAlert, CheckCircle2, TrendingUp, Layers, BookOpen, BarChart2 } from "lucide-react";
 
 export default function Stats() {
   const { data: stats, isLoading } = useGetTriageStats();
@@ -52,6 +52,23 @@ export default function Stats() {
             loading={isLoading}
             className="border-destructive/30"
             valueClassName="text-destructive"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <StatCard
+            title="TOTAL KB SOURCES CONSULTED"
+            value={stats?.totalSources}
+            icon={BookOpen}
+            loading={isLoading}
+            className="border-primary/30"
+          />
+          <StatCard
+            title="AVG SOURCES PER TICKET"
+            value={stats?.avgSourcesPerTicket}
+            icon={BarChart2}
+            loading={isLoading}
+            className="border-primary/30"
           />
         </div>
 
