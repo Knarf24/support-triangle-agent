@@ -12,6 +12,11 @@ export interface TriageStatsSourcesOverTimeItem {
   sources: number;
 }
 
+export interface TriageStatsTicketsOverTimeItem {
+  date: string;
+  count: number;
+}
+
 export interface TriageStats {
   total: number;
   autoResponded: number;
@@ -20,4 +25,6 @@ export interface TriageStats {
   totalSources: number;
   avgSourcesPerTicket: number;
   sourcesOverTime: TriageStatsSourcesOverTimeItem[];
+  ticketsOverTime: TriageStatsTicketsOverTimeItem[];
+  sourcesByDomain: TriageStatsByDomain;
 }

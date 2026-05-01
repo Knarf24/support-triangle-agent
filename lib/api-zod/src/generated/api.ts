@@ -117,6 +117,12 @@ export const GetTriageStatsResponse = zod.object({
       sources: zod.number(),
     }),
   ),
+  ticketsOverTime: zod.array(
+    zod.object({
+      date: zod.string(),
+      count: zod.number(),
+    }),
+  ),
   sourcesByDomain: zod.object({
     hackerrank: zod.number(),
     claude: zod.number(),

@@ -201,6 +201,34 @@ components:
             required:
               - date
               - sources
+        ticketsOverTime:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              count:
+                type: integer
+            required:
+              - date
+              - count
+        sourcesByDomain:
+          type: object
+          properties:
+            hackerrank:
+              type: integer
+            claude:
+              type: integer
+            visa:
+              type: integer
+            unknown:
+              type: integer
+          required:
+            - hackerrank
+            - claude
+            - visa
+            - unknown
       required:
         - total
         - autoResponded
@@ -209,6 +237,8 @@ components:
         - totalSources
         - avgSourcesPerTicket
         - sourcesOverTime
+        - ticketsOverTime
+        - sourcesByDomain
 
     RetrievedDoc:
       type: object

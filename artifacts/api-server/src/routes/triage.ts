@@ -222,6 +222,7 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
 
   let totalSources = 0;
   const sourcesByDate: Record<string, number> = {};
+  const ticketsByDate: Record<string, number> = {};
   const sourcesByDomain: Record<string, number> = { hackerrank: 0, claude: 0, visa: 0, unknown: 0 };
 
   for (const row of sourceRows) {
@@ -232,6 +233,7 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
     sourcesByDomain[domainKey] = (sourcesByDomain[domainKey] || 0) + docs.length;
     const date = row.createdAt.toISOString().slice(0, 10);
     sourcesByDate[date] = (sourcesByDate[date] || 0) + docs.length;
+    ticketsByDate[date] = (ticketsByDate[date] || 0) + 1;
   }
 
   const avgSourcesPerTicket = total > 0 ? Math.round((totalSources / total) * 10) / 10 : 0;
@@ -239,6 +241,10 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
   const sourcesOverTime = Object.entries(sourcesByDate)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, sources]) => ({ date, sources }));
+
+  const ticketsOverTime = Object.entries(ticketsByDate)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, count]) => ({ date, count }));
 
   res.json(
     GetTriageStatsResponse.parse({
@@ -254,6 +260,7 @@ router.get("/triage/stats", async (req, res): Promise<void> => {
       totalSources,
       avgSourcesPerTicket,
       sourcesOverTime,
+      ticketsOverTime,
       sourcesByDomain: {
         hackerrank: sourcesByDomain["hackerrank"] || 0,
         claude: sourcesByDomain["claude"] || 0,

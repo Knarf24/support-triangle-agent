@@ -41,6 +41,7 @@ export default function Stats() {
   const { data: tickets, isLoading: isTicketsLoading } = useListTickets();
   const [mounted, setMounted] = useState(false);
   const [trendsView, setTrendsView] = useState<'day' | 'week'>('day');
+  const [ticketTrendsView, setTicketTrendsView] = useState<'day' | 'week'>('day');
 
   useEffect(() => {
     setMounted(true);
@@ -63,6 +64,24 @@ export default function Stats() {
   }, [stats?.sourcesOverTime]);
 
   const sourcesChartData = trendsView === 'week' ? weeklySourcesData : stats?.sourcesOverTime ?? [];
+
+  const weeklyTicketsData = useMemo(() => {
+    if (!stats?.ticketsOverTime?.length) return [];
+    const buckets = new Map<string, { weekKey: string; weekStart: Date; count: number }>();
+    for (const { date, count } of stats.ticketsOverTime) {
+      const d = new Date(date + "T00:00:00");
+      const year = getISOWeekYear(d);
+      const week = getISOWeek(d);
+      const key = `${year}-W${String(week).padStart(2, '0')}`;
+      if (!buckets.has(key)) {
+        buckets.set(key, { weekKey: key, weekStart: startOfISOWeek(d), count: 0 });
+      }
+      buckets.get(key)!.count += count;
+    }
+    return Array.from(buckets.values()).sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime());
+  }, [stats?.ticketsOverTime]);
+
+  const ticketsChartData = ticketTrendsView === 'week' ? weeklyTicketsData : stats?.ticketsOverTime ?? [];
 
   const domainData = stats ? [
     { name: 'HackerRank', value: stats.byDomain.hackerrank, color: 'hsl(var(--domain-hackerrank))' },
@@ -215,6 +234,80 @@ export default function Stats() {
                     activeDot={{ r: 6, fill: 'hsl(var(--primary))', stroke: 'rgba(0,212,255,0.3)', strokeWidth: 4 }}
                   />
                 </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+          <CardHeader className="border-b border-white/5 bg-black/20 pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-mono font-bold text-primary tracking-[0.2em] flex items-center gap-2">
+                <Activity className="w-4 h-4" />
+                TICKETS PROCESSED OVER TIME
+              </CardTitle>
+              <div className="flex items-center gap-0.5 bg-black/40 border border-white/10 rounded-md p-0.5">
+                {(['day', 'week'] as const).map((view) => (
+                  <button
+                    key={view}
+                    onClick={() => setTicketTrendsView(view)}
+                    className={`px-2.5 py-1 text-[10px] font-mono font-bold tracking-[0.15em] rounded transition-all duration-200 ${
+                      ticketTrendsView === view
+                        ? 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_8px_rgba(0,212,255,0.2)]'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {view === 'day' ? 'DAY' : 'WEEK'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6 h-[260px]">
+            {isLoading ? (
+              <Skeleton className="w-full h-full bg-white/5" />
+            ) : !ticketsChartData.length ? (
+              <div className="flex items-center justify-center h-full text-xs font-mono text-muted-foreground tracking-[0.15em]">NO DATA YET</div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={ticketsChartData} margin={{ top: 10, right: 16, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis
+                    dataKey={ticketTrendsView === 'week' ? 'weekKey' : 'date'}
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    fontFamily="var(--font-mono)"
+                    tickFormatter={(v: string) => {
+                      if (ticketTrendsView === 'week') {
+                        const match = v.match(/^(\d+)-W(\d+)$/);
+                        if (match) return `W${match[2]}`;
+                        return v;
+                      }
+                      const d = new Date(v + "T00:00:00");
+                      return `${d.getMonth() + 1}/${d.getDate()}`;
+                    }}
+                  />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} fontFamily="var(--font-mono)" allowDecimals={false} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(0,212,255,0.05)' }}
+                    contentStyle={{ backgroundColor: 'rgba(10,15,30,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
+                    itemStyle={{ color: 'hsl(var(--foreground))', fontFamily: 'var(--font-mono)', fontSize: '12px' }}
+                    labelStyle={{ color: 'hsl(var(--muted-foreground))', fontWeight: 'bold', fontFamily: 'var(--font-mono)', fontSize: '10px' }}
+                    labelFormatter={(label: string) => {
+                      if (ticketTrendsView === 'week') {
+                        const match = label.match(/^(\d+)-W(\d+)$/);
+                        if (match) return `Week ${match[2]}, ${match[1]}`;
+                        return label;
+                      }
+                      const d = new Date(label + "T00:00:00");
+                      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                    }}
+                    formatter={(value: number) => [value, 'Tickets']}
+                  />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]} fill="hsl(var(--primary))" opacity={0.8} />
+                </BarChart>
               </ResponsiveContainer>
             )}
           </CardContent>
