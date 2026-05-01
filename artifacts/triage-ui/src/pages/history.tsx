@@ -16,6 +16,7 @@ export default function History() {
   const [searchTerm, setSearchTerm] = useState("");
   const [domainFilter, setDomainFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sourcesFilter, setSourcesFilter] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const filteredTickets = tickets?.filter(ticket => {
@@ -23,8 +24,11 @@ export default function History() {
     const matchesDomain = domainFilter === "all" || ticket.domain === domainFilter;
     const matchesStatus = statusFilter === "all" || 
       (statusFilter === "escalated" ? ticket.escalated : !ticket.escalated);
+    const hasDocs = Array.isArray(ticket.retrievedDocs) && ticket.retrievedDocs.length > 0;
+    const matchesSources = sourcesFilter === "all" ||
+      (sourcesFilter === "with" ? hasDocs : !hasDocs);
     
-    return matchesSearch && matchesDomain && matchesStatus;
+    return matchesSearch && matchesDomain && matchesStatus && matchesSources;
   }).reverse();
 
   const toggleExpand = (id: number) => {
@@ -71,6 +75,16 @@ export default function History() {
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="auto">Auto-Responded</SelectItem>
               <SelectItem value="escalated">Escalated</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sourcesFilter} onValueChange={setSourcesFilter}>
+            <SelectTrigger className="w-full sm:w-[180px] rounded-none border-border bg-background">
+              <SelectValue placeholder="Sources" />
+            </SelectTrigger>
+            <SelectContent className="rounded-none">
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="with">With sources</SelectItem>
+              <SelectItem value="without">Without sources</SelectItem>
             </SelectContent>
           </Select>
         </div>
