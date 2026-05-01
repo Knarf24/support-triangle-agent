@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTriageTicket, useListTickets, getListTicketsQueryKey, getGetTriageStatsQueryKey } from "@workspace/api-client-react";
+import { useListTickets, getListTicketsQueryKey, getGetTriageStatsQueryKey } from "@workspace/api-client-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,42 +12,110 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
+type StreamingMeta = {
+  domain: string;
+  domainConfidence: number;
+  escalated: boolean;
+  escalationReason: string;
+  escalationCategories: string[];
+  retrievedDocs: string[];
+};
+
+type StreamingState = StreamingMeta & {
+  ticketText: string;
+  response: string;
+  isStreaming: boolean;
+  id?: number;
+};
+
 export default function Home() {
   const [ticketText, setTicketText] = useState("");
+  const [streaming, setStreaming] = useState<StreamingState | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const { mutate: submitTicket, isPending } = useTriageTicket();
   const { data: history, isLoading: isHistoryLoading } = useListTickets();
+
+  const streamTicket = useCallback(async (text: string) => {
+    setIsSubmitting(true);
+    setStreaming({
+      ticketText: text,
+      domain: "",
+      domainConfidence: 0,
+      escalated: false,
+      escalationReason: "",
+      escalationCategories: [],
+      retrievedDocs: [],
+      response: "",
+      isStreaming: true,
+    });
+
+    try {
+      const response = await fetch("/api/triage/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketText: text }),
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+
+            if (data.type === "meta") {
+              setStreaming((prev) => prev && ({
+                ...prev,
+                domain: data.domain,
+                domainConfidence: data.domainConfidence,
+                escalated: data.escalated,
+                escalationReason: data.escalationReason,
+                escalationCategories: data.escalationCategories,
+                retrievedDocs: data.retrievedDocs,
+              }));
+            } else if (data.type === "chunk") {
+              setStreaming((prev) => prev && ({ ...prev, response: prev.response + data.text }));
+            } else if (data.type === "done") {
+              setStreaming((prev) => prev && ({ ...prev, isStreaming: false, id: data.id }));
+              queryClient.invalidateQueries({ queryKey: getListTicketsQueryKey() });
+              queryClient.invalidateQueries({ queryKey: getGetTriageStatsQueryKey() });
+            }
+          } catch {}
+        }
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to process the ticket. Please try again.", variant: "destructive" });
+      setStreaming(null);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [queryClient, toast]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ticketText.trim()) return;
-
-    submitTicket(
-      { data: { ticketText } },
-      {
-        onSuccess: () => {
-          setTicketText("");
-          toast({
-            title: "Ticket Processed",
-            description: "The AI agent has successfully triaged the ticket.",
-          });
-          queryClient.invalidateQueries({ queryKey: getListTicketsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetTriageStatsQueryKey() });
-        },
-        onError: () => {
-          toast({
-            title: "Error",
-            description: "Failed to process the ticket. Please try again.",
-            variant: "destructive",
-          });
-        }
-      }
-    );
+    if (!ticketText.trim() || isSubmitting) return;
+    const text = ticketText;
+    setTicketText("");
+    streamTicket(text);
   };
 
-  const latestTicket = history?.[history.length - 1];
+  const displayTicket = streaming ?? (history && history.length > 0 ? history[0] : null);
 
   return (
     <AppLayout>
@@ -60,7 +128,9 @@ export default function Home() {
           <div className="flex items-center gap-2 text-sm font-mono bg-card px-3 py-1.5 border border-border">
             <Cpu className="w-4 h-4 text-primary" />
             <span className="text-muted-foreground">AGENT STATUS:</span>
-            <span className="text-primary font-bold">READY</span>
+            <span className={`font-bold ${isSubmitting ? "text-yellow-400 animate-pulse" : "text-primary"}`}>
+              {isSubmitting ? "PROCESSING" : "READY"}
+            </span>
           </div>
         </header>
 
@@ -78,24 +148,24 @@ export default function Home() {
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <Textarea
+                    data-testid="input-ticket"
                     placeholder="User issue goes here..."
                     className="min-h-[200px] font-mono text-sm resize-none rounded-none focus-visible:ring-primary border-border"
                     value={ticketText}
                     onChange={(e) => setTicketText(e.target.value)}
-                    disabled={isPending}
+                    disabled={isSubmitting}
                   />
-                  <Button 
-                    type="submit" 
-                    className="w-full font-bold tracking-wide rounded-none" 
-                    disabled={!ticketText.trim() || isPending}
+                  <Button
+                    data-testid="button-submit"
+                    type="submit"
+                    className="w-full font-bold tracking-wide rounded-none"
+                    disabled={!ticketText.trim() || isSubmitting}
                   >
-                    {isPending ? "PROCESSING..." : "EXECUTE TRIAGE"}
+                    {isSubmitting ? "PROCESSING..." : "EXECUTE TRIAGE"}
                   </Button>
                 </form>
               </CardContent>
             </Card>
-
-            {/* Quick Stats or Last Action could go here */}
           </div>
 
           {/* Results Display */}
@@ -104,14 +174,18 @@ export default function Home() {
               <CardHeader className="border-b border-border bg-muted/30 pb-4">
                 <CardTitle className="text-lg flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <Activity className="w-4 h-4" />
+                    <ActivityIcon className="w-4 h-4" />
                     Latest Analysis Result
                   </span>
-                  {isPending && <Badge variant="outline" className="animate-pulse bg-primary/10 text-primary">ANALYZING...</Badge>}
+                  {streaming?.isStreaming && (
+                    <Badge variant="outline" className="animate-pulse bg-primary/10 text-primary border-primary/30">
+                      ANALYZING...
+                    </Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 flex-1 flex flex-col">
-                {isPending ? (
+                {isSubmitting && !streaming?.domain ? (
                   <div className="space-y-4 flex-1 flex flex-col justify-center">
                     <Skeleton className="h-8 w-1/3" />
                     <Skeleton className="h-4 w-full" />
@@ -121,48 +195,50 @@ export default function Home() {
                       <Skeleton className="h-16 w-full" />
                     </div>
                   </div>
-                ) : latestTicket ? (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                ) : displayTicket && displayTicket.domain ? (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" data-testid="result-panel">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <DomainBadge domain={latestTicket.domain} confidence={latestTicket.domainConfidence} />
-                        {latestTicket.escalated ? (
-                          <Badge variant="destructive" className="rounded-none font-mono flex items-center gap-1">
+                        <DomainBadge domain={displayTicket.domain} confidence={displayTicket.domainConfidence} />
+                        {displayTicket.escalated ? (
+                          <Badge variant="destructive" className="rounded-none font-mono flex items-center gap-1" data-testid="status-escalated">
                             <ShieldAlert className="w-3 h-3" />
                             ESCALATED
                           </Badge>
                         ) : (
-                          <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/30 rounded-none font-mono flex items-center gap-1 hover:bg-emerald-500/30">
+                          <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/30 rounded-none font-mono flex items-center gap-1 hover:bg-emerald-500/30" data-testid="status-auto-responded">
                             <CheckCircle2 className="w-3 h-3" />
                             AUTO-RESPONDED
                           </Badge>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground font-mono flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {format(new Date(latestTicket.createdAt), "HH:mm:ss.SSS")}
-                      </div>
+                      {"createdAt" in displayTicket && displayTicket.createdAt ? (
+                        <div className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {format(new Date(displayTicket.createdAt as string), "HH:mm:ss.SSS")}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="space-y-2">
                       <h4 className="text-xs font-mono font-bold text-muted-foreground tracking-wider">INPUT</h4>
                       <div className="p-3 bg-muted/30 border border-border text-sm font-mono overflow-y-auto max-h-[100px]">
-                        {latestTicket.ticketText}
+                        {displayTicket.ticketText}
                       </div>
                     </div>
 
-                    {latestTicket.escalated ? (
+                    {displayTicket.escalated ? (
                       <div className="space-y-4 border border-destructive/30 bg-destructive/5 p-4">
                         <div>
                           <h4 className="text-xs font-mono font-bold text-destructive tracking-wider flex items-center gap-2 mb-2">
                             <AlertCircle className="w-4 h-4" />
                             ESCALATION REASON
                           </h4>
-                          <p className="text-sm font-medium text-foreground">{latestTicket.escalationReason}</p>
+                          <p className="text-sm font-medium text-foreground">{displayTicket.escalationReason}</p>
                         </div>
-                        {latestTicket.escalationCategories?.length > 0 && (
+                        {displayTicket.escalationCategories?.length > 0 && (
                           <div className="flex gap-2 flex-wrap">
-                            {latestTicket.escalationCategories.map(cat => (
+                            {displayTicket.escalationCategories.map((cat) => (
                               <Badge key={cat} variant="outline" className="border-destructive/30 text-destructive text-xs rounded-none bg-background">
                                 {cat}
                               </Badge>
@@ -173,15 +249,21 @@ export default function Home() {
                     ) : (
                       <div className="space-y-2">
                         <h4 className="text-xs font-mono font-bold text-emerald-500 tracking-wider">AI RESPONSE</h4>
-                        <div className="p-4 bg-muted border border-border text-sm leading-relaxed whitespace-pre-wrap">
-                          {latestTicket.response}
+                        <div
+                          data-testid="text-response"
+                          className="p-4 bg-muted border border-border text-sm leading-relaxed whitespace-pre-wrap min-h-[80px]"
+                        >
+                          {displayTicket.response}
+                          {streaming?.isStreaming && !displayTicket.escalated && (
+                            <span className="inline-block w-[2px] h-[1em] bg-emerald-400 ml-0.5 animate-[blink_1s_step-end_infinite] align-text-bottom" />
+                          )}
                         </div>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground font-mono text-sm space-y-4 opacity-50">
-                    <Activity className="w-12 h-12" />
+                    <ActivityIcon className="w-12 h-12" />
                     <p>AWAITING INPUT...</p>
                   </div>
                 )}
@@ -189,12 +271,15 @@ export default function Home() {
             </Card>
           </div>
         </div>
-
       </div>
     </AppLayout>
   );
 }
 
-function Activity({ className }: { className?: string }) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinelinejoin="round" className={className}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>;
+function ActivityIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  );
 }
