@@ -18,17 +18,15 @@ const router: IRouter = Router();
 function normalizeRetrievedDocs(docs: unknown): RetrievedDoc[] {
   if (!Array.isArray(docs)) return [];
   return docs.map((d) => {
-    if (typeof d === "string") {
-      return { title: extractDocTitle(d), content: d };
+    if (d === null || typeof d !== "object") {
+      console.warn("[normalizeRetrievedDocs] Unexpected non-object entry in retrieved_docs:", d);
+      throw new Error(`Retrieved doc entry must be an object, got: ${typeof d}`);
     }
-    if (d !== null && typeof d === "object") {
-      const obj = d as Record<string, unknown>;
-      const content = typeof obj.content === "string" ? obj.content : "";
-      const title = typeof obj.title === "string" && obj.title ? obj.title : extractDocTitle(content);
-      const url = typeof obj.url === "string" ? obj.url : undefined;
-      return url ? { title, content, url } : { title, content };
-    }
-    return { title: "", content: String(d) };
+    const obj = d as Record<string, unknown>;
+    const content = typeof obj.content === "string" ? obj.content : "";
+    const title = typeof obj.title === "string" && obj.title ? obj.title : extractDocTitle(content);
+    const url = typeof obj.url === "string" ? obj.url : undefined;
+    return url ? { title, content, url } : { title, content };
   });
 }
 
