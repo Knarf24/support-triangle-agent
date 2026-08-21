@@ -20,7 +20,7 @@ For each ticket:
 
 This repository contains two related implementations built at different stages of the project.
 
-### Production web app (`artifacts/`)
+### Full-stack web app (`artifacts/`)
 
 React (Vite) frontend + Express 5 API + PostgreSQL (Drizzle ORM):
 
@@ -53,7 +53,7 @@ python main.py --demo     # 8 built-in sample tickets
 python main.py --batch support_issues.csv
 ```
 
-> **Retrieval note:** the Python CLI implements genuine TF-IDF + semantic hybrid retrieval. The production web app's retriever is a simpler keyword-overlap scorer over the same corpus files — it does not use TF-IDF weighting. If you've seen "TF-IDF retrieval" attributed to the web app elsewhere, that describes the CLI prototype's retriever, not `artifacts/api-server`.
+> **Retrieval note:** the Python CLI implements genuine TF-IDF + semantic hybrid retrieval. The full-stack web app's retriever is a simpler keyword-overlap scorer over the same corpus files — it does not use TF-IDF weighting. If you've seen "TF-IDF retrieval" attributed to the web app elsewhere, that describes the CLI prototype's retriever, not `artifacts/api-server`.
 
 ## Key capabilities
 
@@ -122,9 +122,9 @@ support_issues/       sample ticket CSVs used by the CLI's batch mode
 
 ## Current status
 
-The production web app (`artifacts/`) is a working full-stack triage console with persistence, streaming responses, ticket history, and stats. The Python CLI in `support-triage/` is an earlier prototype kept for its retrieval approach and reference documentation, not the deployed product.
+The full-stack web app (`artifacts/`) is the primary web implementation — a working triage console with persistence, streaming responses, ticket history, and stats. The Python CLI in `support-triage/` is an earlier prototype kept for its retrieval approach and reference documentation, rather than the primary web implementation.
 
 ## Future improvements
 
-- Bring TF-IDF/semantic hybrid retrieval from the Python prototype into the production web app's retriever
+- Bring TF-IDF/semantic hybrid retrieval from the Python prototype into the full-stack web app's retriever
 - Automated tests for classification, risk evaluation, and retrieval scoring
