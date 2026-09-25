@@ -1,4 +1,5 @@
 import { anthropic } from "@workspace/integrations-anthropic-ai";
+import { buildSupportSystemPrompt } from "./prompts";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { RetrievedDoc } from "@workspace/db";
@@ -289,10 +290,7 @@ A member of our team will review your ticket and respond within 2–4 business h
 
   const context = retrievedDocs.length > 0 ? retrievedDocs.map((d) => d.content).join("\n\n---\n\n") : "No specific documentation matched.";
 
-  const systemPrompt = `You are a helpful support agent for ${domain === "unknown" ? "a technology company" : domain === "hackerrank" ? "HackerRank" : domain === "claude" ? "Claude (Anthropic)" : "Visa"}. 
-Use the provided documentation context to answer the customer's question accurately and concisely. 
-If you cannot confidently answer from the context, say so and suggest they contact support.
-Keep responses under 200 words. Be professional and empathetic.`;
+  const systemPrompt = buildSupportSystemPrompt(domain);
 
   const userMessage = `Customer question: ${ticket}
 

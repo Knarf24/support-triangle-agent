@@ -7,6 +7,7 @@
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
+    "test": "node --test src/lib/prompts.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "migrate:kb-urls": "node ./build-migration.mjs && node --enable-source-maps ./dist/migrate-kb-urls.mjs"
   },

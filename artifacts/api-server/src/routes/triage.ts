@@ -10,6 +10,7 @@ import {
   GetTriageStatsResponse,
 } from "@workspace/api-zod";
 import { triageTicket, classifyDomain, evaluateRisk, retrieveDocs, extractDocTitle } from "../lib/triage";
+import { buildSupportSystemPrompt } from "../lib/prompts";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import type { RetrievedDoc } from "@workspace/db";
 
@@ -100,13 +101,7 @@ router.post("/triage/stream", async (req, res): Promise<void> => {
     fullResponse = `Thank you for reaching out to our support team. Your ticket has been flagged for priority review by a human specialist (${escalationReason.toLowerCase()}). A member of our team will contact you within 2-4 business hours. Please do not reply to automated messages — wait for a specialist to follow up directly.`;
   } else {
     const context = retrievedDocs.length > 0 ? retrievedDocs.map((d) => d.content).join("\n\n---\n\n") : "No specific documentation matched.";
-    const domainLabel =
-      domain === "hackerrank" ? "HackerRank"
-      : domain === "claude" ? "Claude (Anthropic)"
-      : domain === "visa" ? "Visa"
-      : "a technology company";
-
-    const systemPrompt = `You are a helpful support agent for ${domainLabel}. Use the provided documentation context to answer the customer's question accurately and concisely. If you cannot confidently answer from the context, say so and suggest they contact support. Keep responses under 200 words. Be professional and empathetic.`;
+    const systemPrompt = buildSupportSystemPrompt(domain);
     const userMessage = `Customer question: ${ticketText}\n\nDocumentation context:\n${context}\n\nPlease provide a helpful response to the customer.`;
 
     const message = await anthropic.messages.create({
